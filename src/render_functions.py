@@ -1,7 +1,9 @@
 from typing import List
 
+from bearlibterminal import terminal as blt
+
 from entity import Entity
-from map_objects import GameMap
+from map_objects.game_map import GameMap
 
 
 def render_all(entities: List[Entity], game_map: GameMap, colors: dict):
