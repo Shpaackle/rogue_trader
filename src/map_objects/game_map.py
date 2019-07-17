@@ -18,12 +18,13 @@ class GameMap(Map):
     def __init__(self, width: int, height: int):
         super(GameMap, self).__init__(width=width, height=height, order="F")
 
-        self.transparent[:] = False
-        self.walkable[:] = False
+        # self.transparent[:] = False
+        # self.walkable[:] = False
         # self.cave_map = np.zeros_like(self.walkable, dtype=int, order="F")
+        self.cave_map: np.array = np.zeros((width, height), order="F")
 
-    def is_blocked(self, x: int, y: int) -> bool:
-        if not self.walkable[x, y]:
+    def is_blocked(self, point: Point) -> bool:
+        if not self.walkable[point.x, point.y]:
             return True
 
         return False
@@ -116,16 +117,16 @@ class GameMap(Map):
     def in_bounds(self, point: Point) -> bool:
         return 0 <= point.x < self.width and 0 <= point.y < self.height
 
-    # TODO: refactor to make more generic
-    # combine with two_step to take a steps parameter and returns multiple values
     def count_one_step_neighbors(self, center: Point) -> int:
+        # TODO: refactor to make more generic
+        # combine with two_step to take a steps parameter and returns multiple values
         count = 0
         for i in [-1, 0, 1]:
             for j in [-1, 0, 1]:
                 point = Point(x=center.x + j, y=center.y + i)
                 if not self.in_bounds(point=point):
                     continue
-                if self.is_blocked(x=j, y=i):
+                if self.cave_map[point.x, point.y]:
                     count += 1
 
         return count
@@ -141,7 +142,7 @@ class GameMap(Map):
                 point = Point(x=center.x + j, y=center.y + i)
                 if not self.in_bounds(point):
                     continue
-                if self.is_blocked(x=j, y=i):
+                if self.cave_map[point.x, point.y]:
                     count += 1
 
         return count
@@ -181,15 +182,17 @@ class GameMap(Map):
         if tile == "CAVE":
             self.walkable[point.x, point.y] = False
             self.transparent[point.x, point.y] = False
+            self.cave_map[point.x, point.y] = FILLED
         elif tile == "EMPTY":
             self.walkable[point.x, point.y] = True
             self.transparent[point.x, point.y] = True
+            self.cave_map[point.x, point.y] = EMPTY
 
     def render(self, colors):
         for y in range(self.height):
             for x in range(self.width):
                 # wall = self.is_blocked(x, y)
-                wall = self.is_blocked(x, y)
+                wall = self.cave_map[x, y] == FILLED
 
                 if wall:
                     blt.printf(

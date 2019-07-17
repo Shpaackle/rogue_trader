@@ -69,14 +69,15 @@ def main():
             action: dict = handle_keys(terminal_input)
 
             exit_game: bool = action.get("exit", False)
-            movement: Point = action.get("move")
+            movement: Optional[Point] = action.get("move", None)
             redraw: bool = action.get("redraw", False)
 
             if exit_game:
                 game_running = False
 
             if movement:
-                if not game_map.is_blocked(player.x + movement.x, player.y + movement.y):
+                point = player.position + movement
+                if not game_map.is_blocked(point):
                     player.move(movement)
 
             if redraw:

@@ -1,4 +1,8 @@
 import random
+from queue import Queue
+from typing import List
+
+import numpy as np
 
 from map_objects.point import Point
 from map_objects.game_map import GameMap
@@ -15,6 +19,8 @@ SECOND_STEP_REPEATS = 2
 
 class MapGenerator:
     game_map: GameMap
+    unconnected_caves: List[List[Point]]
+    visited_map: np.array
 
     @property
     def map_width(self):
@@ -24,6 +30,10 @@ class MapGenerator:
     def map_height(self):
         return self.game_map.height
 
+    def create_new_map(self):
+        # initialize map
+        ...
+
     def generate_caves(self, width: int, height: int):
         self.initialize_cave(width=width, height=height)
         for _ in range(FIRST_STEP_REPEATS):
@@ -31,6 +41,44 @@ class MapGenerator:
         for _ in range(SECOND_STEP_REPEATS):
             self.cave_smooth_step(min_count=SECOND_STEP_MIN, max_count=SECOND_STEP_MAX)
 
+        self.unconnected_caves: List[List[Point]] = self.find_caves()
+        print("finished caves")
+
+    def find_caves(self) -> List[List[Point]]:
+        caves: List[List[Point]] = list()
+        self.visited_map: np.array = np.full_like(self.game_map.transparent, False, order="F")
+
+        for i in range(1, self.map_height - 1):
+            for j in range(1, self.map_width - 1):
+                point = Point(x=j, y=i)
+                wall = self.game_map.is_blocked(point)
+                visited = self.visited_map[j, i]
+                if visited or wall:
+                    continue
+
+                current_cave = self.fill_cave(start_point=point)
+                caves.append(current_cave)
+
+        return caves
+
+    def fill_cave(self, start_point: Point) -> List[Point]:
+        cave: List[Point] = [start_point]
+
+        unexplored = Queue()
+        unexplored.put(start_point)
+        self.visited_map[start_point.x, start_point.y] = True
+
+        while not unexplored.empty():
+            current: Point = unexplored.get()
+            for neighbor in current.all_neighbors:
+                visited = self.visited_map[neighbor.x, neighbor.y]
+                blocked = self.game_map.is_blocked(point=neighbor)
+                if not visited and not blocked:
+                    unexplored.put(neighbor)
+                    cave.append(neighbor)
+                    self.visited_map[neighbor.x, neighbor.y] = True
+
+        return cave
 
     """
         for i in range(1, self.height - 1):
@@ -76,7 +124,5 @@ class MapGenerator:
 
                 if random.random() < INITIAL_CHANCE:
                     game_map.place_tile(point, "CAVE")
-                else:
-                    game_map.place_tile(point, "EMPTY")
 
         self.game_map = game_map
