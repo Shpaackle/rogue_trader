@@ -30,29 +30,23 @@ def main():
     game_running: bool = True
 
     player: Entity = Entity(
-        position=Point(x=map_width//2, y=map_height//2),
+        position=Point(x=0, y=0),
         char="@",
         color=blt.color_from_argb(0, 255, 255, 255)
     )
     npc: Entity = Entity(
-        position=Point(x=screen_width // 2 + 2, y=screen_height // 2),
+        position=Point(x=map_width//2, y=map_height//2),
         char="@",
         color=blt.color_from_argb(0, 255, 255, 0)
     )
     entities: List[Entity] = [player, npc]
 
-    # game_map: GameMap = GameMap(width=map_width, height=map_height)
-    # game_map.make_cave(map_width, map_height, player)
-    # cave_map_settings = {
-    #     "first_pass_one": 5,
-    #     "first_pass_two": 2,
-    #     "second_pass_one": 5,
-    #     "second_pass_two": -1
-    # }
-    map_generator = MapGenerator()
+    map_generator = MapGenerator(map_width=map_width, map_height=map_height)
     map_generator.generate_caves(width=map_width, height=map_height)
 
     game_map: GameMap = map_generator.game_map
+
+    player.position = map_generator.player_start_point
 
     blt.open()
     blt.composition(True)
@@ -83,6 +77,7 @@ def main():
             if redraw:
                 map_generator.generate_caves(width=map_width, height=map_height)
                 game_map: GameMap = map_generator.game_map
+                player.position = map_generator.player_start_point
 
         blt.clear()
 
