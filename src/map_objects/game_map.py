@@ -204,7 +204,7 @@ class GameMap(Map):
         elif tile.label == TileType.FLOOR:
             self.cave_map[point.x, point.y] = EMPTY
 
-    def render(self, fov_map: tcod.map.Map, colors: dict):
+    def render(self, fov_map: tcod.map.Map):
         for tile in self.tiles:
             tile.visible = fov_map.fov[tile.x, tile.y]
 
