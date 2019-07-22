@@ -7,6 +7,7 @@ from tcod.map import Map
 
 from entity import Entity
 from map_objects.point import Point
+from map_objects.tile import Tile, TileType
 from rect import Rect
 
 
@@ -22,6 +23,22 @@ class GameMap(Map):
         # self.walkable[:] = False
         # self.cave_map = np.zeros_like(self.walkable, dtype=int, order="F")
         self.cave_map: np.array = np.zeros((width, height), order="F")
+        self.explored: np.array = np.full((width, height), order="F", fill_value=False)
+
+    def explore(self, point: Point):
+        self.explored[point.x, point.y] = True
+
+    @property
+    def tiles(self):
+        for i in range(self.height):
+            for j in range(self.width):
+                point = Point(x=j, y=i)
+                if self.cave_map[j, i]:
+                    label = TileType.CAVE
+                else:
+                    label = TileType.FLOOR
+                tile = Tile.from_label(point=point, label=label)
+                yield tile
 
     def is_blocked(self, point: Point) -> bool:
         if not self.walkable[point.x, point.y]:
@@ -178,27 +195,38 @@ class GameMap(Map):
     #             else:
     #                 self.cave_map[j, i] = EMPTY
 
-    def place_tile(self, point: Point, tile: str):
-        if tile == "CAVE":
-            self.walkable[point.x, point.y] = False
-            self.transparent[point.x, point.y] = False
+    def place_tile(self, point: Point, tile: Tile):
+        self.walkable[point.x, point.y] = tile.walkable
+        self.transparent[point.x, point.y] = tile.transparent
+
+        if tile.label == TileType.CAVE:
             self.cave_map[point.x, point.y] = FILLED
-        elif tile == "EMPTY":
-            self.walkable[point.x, point.y] = True
-            self.transparent[point.x, point.y] = True
+        elif tile.label == TileType.FLOOR:
             self.cave_map[point.x, point.y] = EMPTY
 
-    def render(self, colors):
-        for y in range(self.height):
-            for x in range(self.width):
-                # wall = self.is_blocked(x, y)
-                wall = self.cave_map[x, y] == FILLED
+    def render(self, fov_map: tcod.map.Map, colors: dict):
+        for tile in self.tiles:
+            tile.visible = fov_map.fov[tile.x, tile.y]
 
-                if wall:
-                    blt.printf(
-                        x=x, y=y, s=f"[color={colors.get('dark_wall')}]#[/color]"
-                    )
-                else:
-                    blt.printf(
-                        x=x, y=y, s=f"[color={colors.get('dark_ground')}].[/color]"
-                    )
+            if tile.visible:
+                self.explore(tile.point)
+
+            tile.explored = self.explored[tile.x, tile.y]
+
+            if tile.explored:
+                blt.printf(x=tile.x, y=tile.y, s=f"[color={tile.color}]{tile.char}[/color]")
+
+
+        # for y in range(self.height):
+        #     for x in range(self.width):
+        #         # wall = self.is_blocked(x, y)
+        #         wall = self.cave_map[x, y] == FILLED
+        #
+        #         if wall:
+        #             blt.printf(
+        #                 x=x, y=y, s=f"[color={colors.get('dark_wall')}]#[/color]"
+        #             )
+        #         else:
+        #             blt.printf(
+        #                 x=x, y=y, s=f"[color={colors.get('dark_ground')}].[/color]"
+        #             )

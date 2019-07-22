@@ -6,6 +6,7 @@ import numpy as np
 
 from map_objects.point import Point
 from map_objects.game_map import GameMap
+from map_objects.tile import Tile
 
 
 INITIAL_CHANCE = 0.4
@@ -94,11 +95,11 @@ class MapGenerator:
                 count2 = self.game_map.count_two_step_neighbors(center=point)
 
                 if count1 >= min_count:
-                    self.game_map.place_tile(point=point, tile="CAVE")
+                    self.game_map.place_tile(point=point, tile=Tile.cave(point=point))
                 elif count2 <= max_count:
-                    self.game_map.place_tile(point=point, tile="CAVE")
+                    self.game_map.place_tile(point=point, tile=Tile.cave(point=point))
                 else:
-                    self.game_map.place_tile(point=point, tile="EMPTY")
+                    self.game_map.place_tile(point=point, tile=Tile.floor(point=point))
 
     def initialize_cave(self, width: int, height: int):
         game_map = GameMap(width=width, height=height)
@@ -109,10 +110,10 @@ class MapGenerator:
             for j in range(width):
                 point = Point(x=j, y=i)
                 if i == 0 or j == 0 or i == height - 1 or j == width - 1:
-                    game_map.place_tile(point, "CAVE")
+                    game_map.place_tile(point, Tile.cave(point=point))
 
                 if random.random() < INITIAL_CHANCE:
-                    game_map.place_tile(point, "CAVE")
+                    game_map.place_tile(point, Tile.cave(point=point))
 
         self.game_map = game_map
 
@@ -124,7 +125,7 @@ class MapGenerator:
         largest = cave_sort[0]
         for cave in cave_sort[1:]:
             for point in cave:
-                self.game_map.place_tile(point, tile="CAVE")
+                self.game_map.place_tile(point, tile=Tile.cave(point=point))
         return largest
 
     def remove_small_walls(self, cave: List[Point]) -> List[Point]:
@@ -136,5 +137,15 @@ class MapGenerator:
                     continue
                 if self.game_map.count_one_step_neighbors(point) == 1:
                     cave.append(point)
-                    self.game_map.place_tile(point=point, tile="EMPTY")
+                    self.game_map.place_tile(point=point, tile=Tile.empty(point=point))
         return cave
+
+    def find_tile(self, point: Point) -> Tile:
+        label = self.game_map.cave_map[point.x, point.y]
+        if label == "CAVE":
+            tile = Tile.cave(point)
+        elif label == "FLOOR":
+            tile = Tile.floor(point)
+        else:
+            tile = Tile.empty(point)
+        return tile
