@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from enum import auto, Enum
 
 from colors import Colors
@@ -11,6 +12,7 @@ class TileType(Enum):
     WALL = auto()
 
 
+@dataclass
 class Tile:
     def __init__(self, x: int, y: int, label: TileType, walkable: bool = False, transparent: bool = False):
         self._point: Point = Point(x=x, y=y)
