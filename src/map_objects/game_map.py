@@ -5,7 +5,6 @@ import tcod
 from bearlibterminal import terminal as blt
 from tcod.map import Map
 
-from entity import Entity
 from map_objects.point import Point
 from map_objects.tile import Tile, TileType
 from rect import Rect

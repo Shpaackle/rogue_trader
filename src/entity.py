@@ -3,6 +3,7 @@ from typing import List, Optional
 from bearlibterminal import terminal as blt
 
 from colors import Color
+from map_objects.game_map import GameMap
 from map_objects.point import Point
 
 
@@ -10,12 +11,20 @@ class Entity:
     """
     A generic object to represent players, enemies, items, etc.
     """
-    def __init__(self, position: Point, char: str, color: Color, name: str, blocks: bool = False):
+    def __init__(self, position: Point, char: str, color: Color, name: str, blocks: bool = False, fighter=None, ai=None):
         self.position: Point = position
         self.char: str = char
         self.color: Color = color
         self.name: str = name
         self.blocks: bool = blocks
+        self.fighter = fighter
+        self.ai = ai
+
+        if self.fighter:
+            self.fighter.owner = self
+
+        if self.ai:
+            self.ai.owner = self
 
     @property
     def x(self) -> int:
@@ -36,6 +45,18 @@ class Entity:
     def move(self, point: Point):
         """ Move the entity in a particular direction """
         self.position += point
+
+    def move_towards(self, target_position: Point, game_map: GameMap, entities: List["Entity"]):
+        d: Point = target_position - self.position
+        distance = self.position.distance_to(target_position)
+
+        movement = Point(
+            x=int(round(d.x / distance)),
+            y=int(round(d.y / distance))
+        )
+
+        if not (game_map.is_blocked(target_position + movement) or get_blocking_entities_at_location(entities, self.position + movement)):
+            self.move(movement)
 
     def draw(self):
         """ Draw the entity to the terminal """

@@ -3,6 +3,7 @@ from typing import List, Optional
 from bearlibterminal import terminal as blt
 
 from colors import Color
+from components.fighter import Fighter
 from entity import Entity, get_blocking_entities_at_location
 from fov_functions import initialize_fov, recompute_fov
 from game_states import GameStates
@@ -40,8 +41,9 @@ def main():
 
     game_running: bool = True
 
+    fighter_component: Fighter = Fighter(hp=30, defense=2, power=5)
     player: Entity = Entity(
-        position=Point(x=0, y=0), char="@", color=Color.WHITE, name="Player", blocks=True
+        position=Point(x=0, y=0), char="@", color=Color.WHITE, name="Player", blocks=True, fighter=fighter_component
     )
     entities: List[Entity] = [player]
 
@@ -110,10 +112,9 @@ def main():
                     game_state = GameStates.ENEMY_TURN
 
             if game_state == GameStates.ENEMY_TURN:
-                y = 1
                 for entity in entities[1:]:
-                    blt.printf(x=83, y=y, s=f"The {entity.name} ponders the meaning of its existence.")
-                    y += 1
+                    if entity.ai:
+                        entity.ai.take_turn()
 
                 game_state = GameStates.PLAYER_TURN
 

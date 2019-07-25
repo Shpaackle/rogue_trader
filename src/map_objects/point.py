@@ -100,6 +100,6 @@ class Point:
         for direction in [self.N, self.E, self.S, self.W]:
             yield direction
 
-    def distance(self, p2):
+    def distance_to(self, p2) -> float:
         x, y = self - p2
         return math.sqrt(x ** 2 + y ** 2)
