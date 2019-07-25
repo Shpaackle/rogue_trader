@@ -105,7 +105,7 @@ def main():
                     else:
                         player.move(movement)
 
-                    fov_update = True
+                        fov_update = True
 
                     game_state = GameStates.ENEMY_TURN
 
