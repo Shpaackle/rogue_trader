@@ -134,6 +134,21 @@ class GameMap(Map):
     def in_bounds(self, point: Point) -> bool:
         return 0 <= point.x < self.width and 0 <= point.y < self.height
 
+    def count_neighbors(self, point: Point, steps: int):
+        count = 0
+        for i in range(-steps, steps):
+            for j in range(-steps, steps):
+                if abs(i) == 2 and abs(j) == 2:
+                    continue
+
+                neighbor = Point(x=point.x + j, y=point.y + i)
+                if not self.in_bounds(neighbor):
+                    continue
+                if self.cave_map[neighbor.x, neighbor.y]:
+                    count += 1
+
+        return count
+
     def count_one_step_neighbors(self, center: Point) -> int:
         # TODO: refactor to make more generic
         # combine with two_step to take a steps parameter and returns multiple values
@@ -205,28 +220,32 @@ class GameMap(Map):
             self.cave_map[point.x, point.y] = EMPTY
 
     def render(self, fov_map: tcod.map.Map):
-        for tile in self.tiles:
-            tile.visible = fov_map.fov[tile.x, tile.y]
+        for i in range(0, self.height):
+            for j in range(0, self.width):
+                point = Point(x=j, y=i)
+                if self.is_blocked(point=point):
+                    tile = Tile.wall(point=point)
+                else:
+                    tile = Tile.floor(point=point)
 
-            if tile.visible:
-                self.explore(tile.point)
+                tile.visible = fov_map.fov[point.x, point.y]
 
-            tile.explored = self.explored[tile.x, tile.y]
+                if tile.visible:
+                    self.explore(point=point)
 
-            if tile.explored:
-                blt.printf(x=tile.x, y=tile.y, s=f"[color={tile.color}]{tile.char}[/color]")
+                tile.explored = self.explored[point.x, point.y]
 
+                if tile.explored:
+                    blt.printf(x=point.x, y=point.y, s=f"[color={tile.color}]{tile.char}[/color]")
 
-        # for y in range(self.height):
-        #     for x in range(self.width):
-        #         # wall = self.is_blocked(x, y)
-        #         wall = self.cave_map[x, y] == FILLED
         #
-        #         if wall:
-        #             blt.printf(
-        #                 x=x, y=y, s=f"[color={colors.get('dark_wall')}]#[/color]"
-        #             )
-        #         else:
-        #             blt.printf(
-        #                 x=x, y=y, s=f"[color={colors.get('dark_ground')}].[/color]"
-        #             )
+        # for tile in self.tiles:
+        #     tile.visible = fov_map.fov[tile.x, tile.y]
+        #
+        #     if tile.visible:
+        #         self.explore(tile.point)
+        #
+        #     tile.explored = self.explored[tile.x, tile.y]
+        #
+        #     if tile.explored:
+        #         blt.printf(x=tile.x, y=tile.y, s=f"[color={tile.color}]{tile.char}[/color]")

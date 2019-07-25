@@ -4,6 +4,8 @@ from typing import List
 
 import numpy as np
 
+from colors import Color
+from entity import Entity
 from map_objects.point import Point
 from map_objects.game_map import GameMap
 from map_objects.tile import Tile
@@ -37,6 +39,11 @@ class MapGenerator:
     @property
     def map_height(self):
         return self.game_map.height
+
+    def make_map(self, width: int, height: int, entities: List[Entity], min_monsters: int, max_monsters: int):
+        self.generate_caves(width=width, height=height)
+
+        self.place_entities(entities=entities, min_monsters=min_monsters, max_monsters=max_monsters)
 
     def generate_caves(self, width: int, height: int):
         self.initialize_cave(width=width, height=height)
@@ -149,3 +156,17 @@ class MapGenerator:
         else:
             tile = Tile.empty(point)
         return tile
+
+    def place_entities(self, entities: List[Entity], min_monsters: int, max_monsters: int):
+        number_of_monsters: int = random.randint(min_monsters, max_monsters)
+
+        for i in range(number_of_monsters):
+            point: Point = random.choice(self.cave)
+
+            if not any([entity for entity in entities if entity.position == point]):
+                if random.randint(0, 100) < 80:
+                    monster: Entity = Entity(position=point, char="o", color=Color.LIGHT_GREEN, name="Orc", blocks=True)
+                else:
+                    monster: Entity = Entity(position=point, char="T", color=Color.DARKER_GREEN, name="Troll", blocks=True)
+
+                entities.append(monster)

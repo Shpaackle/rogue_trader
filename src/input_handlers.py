@@ -12,8 +12,6 @@ def handle_keys(key: int):
         return {"move": Point(-1, 0)}
     elif key == blt.TK_RIGHT:
         return {"move": Point(1, 0)}
-    elif key == blt.TK_P:
-        return {"redraw": True}
 
     if key == blt.TK_ESCAPE or key == blt.TK_Q or key == blt.TK_CLOSE:
         return {"exit": True}

@@ -1,5 +1,8 @@
+from typing import List, Optional
+
 from bearlibterminal import terminal as blt
 
+from colors import Color
 from map_objects.point import Point
 
 
@@ -7,10 +10,12 @@ class Entity:
     """
     A generic object to represent players, enemies, items, etc.
     """
-    def __init__(self, position: Point, char: str, color):
-        self.position = position
-        self.char = char
-        self.color = color
+    def __init__(self, position: Point, char: str, color: Color, name: str, blocks: bool = False):
+        self.position: Point = position
+        self.char: str = char
+        self.color: Color = color
+        self.name: str = name
+        self.blocks: bool = blocks
 
     @property
     def x(self) -> int:
@@ -34,4 +39,12 @@ class Entity:
 
     def draw(self):
         """ Draw the entity to the terminal """
-        blt.printf(x=self.x, y=self.y, s=f"[color={self.color}]{self.char}[/color]")
+        blt.printf(x=self.x, y=self.y, s=f"[color={self.color.value}]{self.char}[/color]")
+
+
+def get_blocking_entities_at_location(entities: List[Entity], destination: Point) -> Optional[Entity]:
+    for entity in entities:
+        if entity.blocks and entity.position == destination:
+            return entity
+
+    return None

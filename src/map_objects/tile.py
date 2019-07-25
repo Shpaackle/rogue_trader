@@ -1,6 +1,6 @@
 from enum import auto, Enum
 
-from colors import Colors
+from colors import Color
 from map_objects.point import Point
 
 
@@ -44,7 +44,7 @@ class Tile:
         else:
             light = "DARK"
 
-        return Colors[f"{light}_{label}"].value
+        return Color[f"{light}_{label}"].value
 
     @property
     def char(self):
