@@ -19,6 +19,14 @@ class Tile:
         self.transparent: bool = transparent
         self._visible: bool = False
         self._explored: bool = False
+        
+    @property
+    def blocks_sight(self) -> bool:
+        return not self.transparent
+    
+    @property
+    def blocked(self) -> bool:
+        return not self.walkable
 
     @property
     def point(self) -> Point:
@@ -47,7 +55,7 @@ class Tile:
         return Color[f"{light}_{label}"].value
 
     @property
-    def char(self):
+    def char(self) -> str:
         chars = {
             TileType.FLOOR: ".",
             TileType.EMPTY: ".",
@@ -65,7 +73,7 @@ class Tile:
         self._visible = value
 
     @property
-    def x(self):
+    def x(self) -> int:
         return self._point.x
 
     @x.setter
@@ -74,7 +82,7 @@ class Tile:
         self._point = new_point
 
     @property
-    def y(self):
+    def y(self) -> int:
         return self._point.y
 
     @y.setter
@@ -99,7 +107,7 @@ class Tile:
         return Tile(x=point.x, y=point.y, label=TileType.CAVE, walkable=False, transparent=False)
 
     @classmethod
-    def from_label(cls, point: Point, label: TileType = TileType.EMPTY):
+    def from_label(cls, point: Point, label: TileType = TileType.EMPTY) -> "Tile":
         tiles = {
             "CAVE": Tile.cave,
             "FLOOR": Tile.floor,
@@ -110,7 +118,7 @@ class Tile:
         return tile(point)
 
     @classmethod
-    def from_string(cls, point: Point, string: str = "EMPTY"):
+    def from_string(cls, point: Point, string: str = "EMPTY") -> "Tile":
         # tiles = {
         #     "CAVE": Tile.cave,
         #     "FLOOR": Tile.floor,

@@ -96,14 +96,16 @@ def main():
             if exit_game:
                 game_running = False
 
+            player_turn_results = []
+
             if movement and game_state == GameStates.PLAYER_TURN:
                 destination = player.position + movement
                 if not game_map.is_blocked(destination):
                     target = get_blocking_entities_at_location(entities=entities, destination=destination)
 
                     if target:
-                        blt.printf(2, 42, f"You kick the {target.name} in the shins, much to its annoyance!")
-
+                        attack_results = player.fighter.attack(target=target)
+                        player_turn_results.extend(attack_results)
                     else:
                         player.move(movement)
 
@@ -111,12 +113,33 @@ def main():
 
                     game_state = GameStates.ENEMY_TURN
 
+            for player_turn_result in player_turn_results:
+                message = player_turn_result.get("message")
+                dead_entity = player_turn_result.get("dead")
+
+                if message:
+                    print(message)
+
+                if dead_entity:
+                    pass  # We'll do something here momentarily
+
             if game_state == GameStates.ENEMY_TURN:
                 for entity in entities[1:]:
                     if entity.ai:
-                        entity.ai.take_turn()
+                        enemy_turn_results = entity.ai.take_turn(target=player, fov_map=fov_map, game_map=game_map, entities=entities)
 
-                game_state = GameStates.PLAYER_TURN
+                        for enemy_turn_result in enemy_turn_results:
+                            message = enemy_turn_result.get("message")
+                            dead_entity = enemy_turn_result.get("dead")
+
+                            if message:
+                                print(message)
+
+                            if dead_entity:
+                                pass
+
+                else:
+                    game_state = GameStates.PLAYER_TURN
 
 
 if __name__ == "__main__":
