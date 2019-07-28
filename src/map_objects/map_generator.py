@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import random
 from queue import Queue
 from typing import List
@@ -11,6 +13,7 @@ from entity import Entity
 from map_objects.point import Point
 from map_objects.game_map import GameMap
 from map_objects.tile import Tile
+from render_functions import RenderOrder
 
 
 INITIAL_CHANCE = 0.4
@@ -169,10 +172,10 @@ class MapGenerator:
                 if random.randint(0, 100) < 80:
                     fighter_component: Fighter = Fighter(hp=10, defense=0, power=3)
                     ai_component: BasicMonster = BasicMonster()
-                    monster: Entity = Entity(position=point, char="o", color=Color.LIGHT_GREEN, name="Orc", blocks=True, fighter=fighter_component, ai=ai_component)
+                    monster: Entity = Entity(position=point, char="o", color=Color.LIGHT_GREEN, name="Orc", blocks=True, render_order=RenderOrder.ACTOR, fighter=fighter_component, ai=ai_component)
                 else:
                     fighter_component: Fighter = Fighter(hp=16, defense=1, power=4)
                     ai_component: BasicMonster = BasicMonster()
-                    monster: Entity = Entity(position=point, char="T", color=Color.DARKER_GREEN, name="Troll", blocks=True, fighter=fighter_component, ai=ai_component)
+                    monster: Entity = Entity(position=point, char="T", color=Color.DARKER_GREEN, name="Troll", blocks=True, render_order=RenderOrder.ACTOR, fighter=fighter_component, ai=ai_component)
 
                 entities.append(monster)

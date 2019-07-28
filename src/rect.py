@@ -1,11 +1,15 @@
+from __future__ import annotations
+
+from typing import Generator
+
 from map_objects.point import Point
 
 
 class Rect:
     def __init__(self, position: Point, width: int, height: int):
-        self.position = position
-        self.width = width
-        self.height = height
+        self.position: Point = position
+        self.width: int = width
+        self.height: int = height
 
     def __iter__(self):
         for j in range(self.height):
@@ -17,7 +21,7 @@ class Rect:
         return self.position.x
 
     @x.setter
-    def x(self, value: int):
+    def x(self, value: int) -> None:
         new_position = Point(value, self.y)
         self.position = new_position
 
@@ -26,7 +30,7 @@ class Rect:
         return self.position.y
 
     @y.setter
-    def y(self, value: int):
+    def y(self, value: int) -> None:
         new_position = Point(self.x, value)
         self.position = new_position
 
@@ -37,7 +41,7 @@ class Rect:
         return Point(x, y)
 
     @center.setter
-    def center(self, point: Point):
+    def center(self, point: Point) -> None:
         x = point.x - self.width // 2
         y = point.y - self.height // 2
         self.position = Point(x, y)
@@ -58,7 +62,16 @@ class Rect:
     def bottom(self) -> int:
         return self.y + (self.height - 1)
 
-    def intersect(self, other: "Rect"):
+    @property
+    def top_left(self) -> Point:
+        return self.position
+
+    @top_left.setter
+    def top_left(self, value: Point) -> None:
+        if self.top_left != value:
+            self.position = value
+
+    def intersect(self, other: "Rect") -> bool:
         """ Return True if this rectangle intersects with another one """
         return (
             self.x <= other.right
@@ -66,3 +79,15 @@ class Rect:
             and self.y <= other.bottom
             and self.bottom >= other.y
         )
+
+    def in_bounds(self, point: Point) -> bool:
+        return 0 <= point.x < self.width and 0 <= point.y < self.height
+
+    @classmethod
+    def from_center(cls, center: Point, width: int, height: int):
+        width_offset = (width + 1) // 2 - 1
+        height_offset = (height + 1) // 2 - 1
+
+        top_left = Point(center.x - width_offset, center.y - height_offset)
+
+        return Rect(position=top_left, width=width, height=height)

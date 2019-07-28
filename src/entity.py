@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import List, Optional
 
 from bearlibterminal import terminal as blt
@@ -6,18 +8,31 @@ import tcod
 from colors import Color
 from map_objects.game_map import GameMap
 from map_objects.point import Point
+from render_functions import RenderOrder
 
 
 class Entity:
     """
     A generic object to represent players, enemies, items, etc.
     """
-    def __init__(self, position: Point, char: str, color: Color, name: str, blocks: bool = False, fighter=None, ai=None):
+
+    def __init__(
+        self,
+        position: Point,
+        char: str,
+        color: Color,
+        name: str,
+        blocks: bool = False,
+        render_order: RenderOrder = RenderOrder.CORPSE,
+        fighter=None,
+        ai=None,
+    ):
         self.position: Point = position
         self.char: str = char
         self.color: Color = color
         self.name: str = name
         self.blocks: bool = blocks
+        self.render_order: RenderOrder = render_order
         self.fighter = fighter
         self.ai = ai
 
@@ -47,21 +62,25 @@ class Entity:
         """ Move the entity in a particular direction """
         self.position += point
 
-    def move_towards(self, target_position: Point, game_map: GameMap, entities: List["Entity"]):
+    def move_towards(
+        self, target_position: Point, game_map: GameMap, entities: List["Entity"]
+    ):
         d: Point = target_position - self.position
         distance = self.position.distance_to(target_position)
 
-        movement = Point(
-            x=int(round(d.x / distance)),
-            y=int(round(d.y / distance))
-        )
+        movement = Point(x=int(round(d.x / distance)), y=int(round(d.y / distance)))
 
-        if not (game_map.is_blocked(target_position + movement) or get_blocking_entities_at_location(entities, self.position + movement)):
+        if not (
+            game_map.is_blocked(target_position + movement)
+            or get_blocking_entities_at_location(entities, self.position + movement)
+        ):
             self.move(movement)
 
     def move_astar(self, target: "Entity", entities: List["Entity"], game_map: GameMap):
         # Create a FOV map that has the dimensions of the map
-        fov: tcod.map.Map = tcod.map.Map(width=game_map.width, height=game_map.height, order="F")
+        fov: tcod.map.Map = tcod.map.Map(
+            width=game_map.width, height=game_map.height, order="F"
+        )
 
         # Scan the current map each turn and set all the walls as unwalkable
         for tile in game_map.tiles:
@@ -85,8 +104,10 @@ class Entity:
         tcod.path_compute(my_path, self.x, self.y, target.x, target.y)
 
         # Check if the path exists, and in this case, also the path is shorter than 25 tiles
-        # The path size matters if you want the monster to use alternative longer paths (for example through other rooms) if for example the player is in a corridor
-        # It makes sense to keep the path size relatively low to keep monsters from running around the map is there's an alternative path really far away
+        # The path size matters if you want the monster to use alternative longer paths (for
+        # example through other rooms) if for example the player is in a corridor
+        # It makes sense to keep the path size relatively low to keep monsters from running around
+        # the map if there's an alternative path really far away
         if not tcod.path_is_empty(my_path) and tcod.path_size(my_path) < 25:
             # Find the next coordinates in the computed full path
             x, y = tcod.path_walk(my_path, True)
@@ -95,19 +116,28 @@ class Entity:
                 self.x = x
                 self.y = y
         else:
-            # Keep the old move function as a backup so that is there are no paths (for example another monster blocks a corridor)
-            # it will still try to move towards the player (closer to the corridor opening)
-            self.move_towards(target_position=target.position, game_map=game_map, entities=entities)
+            # Keep the old move function as a backup so that is there are no paths (for example
+            # another monster blocks a corridor it will still try to move towards the player
+            # (closer to the corridor opening)
+            self.move_towards(
+                target_position=target.position, game_map=game_map, entities=entities
+            )
 
         # Delete the path to free memory
         tcod.path_delete(my_path)
 
-    def draw(self):
+    def draw(self, point: Point = None):
         """ Draw the entity to the terminal """
-        blt.printf(x=self.x, y=self.y, s=f"[color={self.color.value}]{self.char}[/color]")
+        if point is None:
+            point = self.position
+        blt.printf(
+            x=point.x, y=point.y, s=f"[color={self.color.value}]{self.char}[/color]"
+        )
 
 
-def get_blocking_entities_at_location(entities: List[Entity], destination: Point) -> Optional[Entity]:
+def get_blocking_entities_at_location(
+    entities: List[Entity], destination: Point
+) -> Optional[Entity]:
     for entity in entities:
         if entity.blocks and entity.position == destination:
             return entity

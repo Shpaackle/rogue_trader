@@ -1,12 +1,23 @@
-from typing import List
+from __future__ import annotations
 
-import tcod
+from typing import List, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import tcod.map
+    from entity import Entity
+    from map_objects.game_map import GameMap
 
 
 class BasicMonster:
     owner = None
 
-    def take_turn(self, target: "Entity", fov_map: tcod.map.Map, game_map: "GameMap", entities: List["Entity"]):
+    def take_turn(
+        self,
+        target: "Entity",
+        fov_map: tcod.map.Map,
+        game_map: "GameMap",
+        entities: List["Entity"],
+    ):
         results = []
 
         monster = self.owner

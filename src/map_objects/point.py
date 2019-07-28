@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 import math
 from collections import namedtuple
 from dataclasses import dataclass
 from enum import Enum
+from typing import Iterator
 
 
 POINT = namedtuple("POINT", ["x", "y"],)
@@ -32,71 +35,71 @@ class Point:
     x: int
     y: int
 
-    def __add__(self, other: "Point"):
+    def __add__(self, other: "Point") -> "Point":
         return Point(self.x + other.x, self.y + other.y)
 
-    def __sub__(self, other: "Point"):
+    def __sub__(self, other: "Point") -> "Point":
         return Point(self.x - other.x, self.y - other.y)
 
-    def __mul__(self, other: int):
+    def __mul__(self, other: int) -> "Point":
         return Point(self.x * other, self.y * other)
 
     def __str__(self):
         return f"({self.x}, {self.y})"
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[int]:
         yield self.x
         yield self.y
 
     @property
-    def NW(self):
+    def NW(self) -> "Point":
         return self._direction(Direction.NW.value)
 
     @property
-    def N(self):
+    def N(self) -> "Point":
         return self._direction(Direction.N.value)
 
     @property
-    def NE(self):
+    def NE(self) -> "Point":
         return self._direction(Direction.NE.value)
 
     @property
-    def W(self):
+    def W(self) -> "Point":
         return self._direction(Direction.W.value)
 
     @property
-    def E(self):
+    def E(self) -> "Point":
         return self._direction(Direction.E.value)
 
     @property
-    def SW(self):
+    def SW(self) -> "Point":
         return self._direction(Direction.SW.value)
 
     @property
-    def S(self):
+    def S(self) -> "Point":
         return self._direction(Direction.S.value)
 
     @property
-    def SE(self):
+    def SE(self) -> "Point":
         return self._direction(Direction.SE.value)
 
     @property
-    def ORIGIN(self):
+    def ORIGIN(self) -> "Point":
         return self._direction(Direction.ORIGIN.value)
 
-    def _direction(self, point):
+    def _direction(self, point) -> "Point":
         return Point(self.x + point.x, self.y + point.y)
 
     # def distance(self, point):
     #     return Point(abs(self.x - point.x), abs(self.y - point.y))
 
     @property
-    def all_neighbors(self):
+    def all_neighbors(self) -> "Point":
         for direction in [self.N, self.NE, self.E, self.SE, self.S, self.SW, self.W, self.NW]:
             yield direction
 
     @property
-    def direct_neighbors(self):
+    def direct_neighbors(self) -> "Point":
         for direction in [self.N, self.E, self.S, self.W]:
             yield direction
 

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from enum import auto, Enum
 
 from colors import Color
@@ -12,18 +14,25 @@ class TileType(Enum):
 
 
 class Tile:
-    def __init__(self, x: int, y: int, label: TileType, walkable: bool = False, transparent: bool = False):
+    def __init__(
+        self,
+        x: int,
+        y: int,
+        label: TileType,
+        walkable: bool = False,
+        transparent: bool = False,
+    ):
         self._point: Point = Point(x=x, y=y)
         self.label: TileType = label
         self.walkable: bool = walkable
         self.transparent: bool = transparent
         self._visible: bool = False
         self._explored: bool = False
-        
+
     @property
     def blocks_sight(self) -> bool:
         return not self.transparent
-    
+
     @property
     def blocked(self) -> bool:
         return not self.walkable
@@ -60,7 +69,7 @@ class Tile:
             TileType.FLOOR: ".",
             TileType.EMPTY: ".",
             TileType.CAVE: "#",
-            TileType.WALL: "#"
+            TileType.WALL: "#",
         }
         return chars[self.label]
 
@@ -96,15 +105,21 @@ class Tile:
 
     @classmethod
     def wall(cls, point: Point) -> "Tile":
-        return Tile(x=point.x, y=point.y, label=TileType.WALL, walkable=False, transparent=False)
+        return Tile(
+            x=point.x, y=point.y, label=TileType.WALL, walkable=False, transparent=False
+        )
 
     @classmethod
     def floor(cls, point: Point) -> "Tile":
-        return Tile(x=point.x, y=point.y, label=TileType.FLOOR, walkable=True, transparent=True)
+        return Tile(
+            x=point.x, y=point.y, label=TileType.FLOOR, walkable=True, transparent=True
+        )
 
     @classmethod
     def cave(cls, point: Point) -> "Tile":
-        return Tile(x=point.x, y=point.y, label=TileType.CAVE, walkable=False, transparent=False)
+        return Tile(
+            x=point.x, y=point.y, label=TileType.CAVE, walkable=False, transparent=False
+        )
 
     @classmethod
     def from_label(cls, point: Point, label: TileType = TileType.EMPTY) -> "Tile":
@@ -112,7 +127,7 @@ class Tile:
             "CAVE": Tile.cave,
             "FLOOR": Tile.floor,
             "WALL": Tile.wall,
-            "EMPTY": Tile.empty
+            "EMPTY": Tile.empty,
         }
         tile = tiles[label.name]
         return tile(point)

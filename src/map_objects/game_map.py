@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import random
+from typing import Iterator, TYPE_CHECKING, Optional
 
 import numpy as np
 import tcod
@@ -9,26 +12,29 @@ from map_objects.point import Point
 from map_objects.tile import Tile, TileType
 from rect import Rect
 
+if TYPE_CHECKING:
+    from camera import Camera
 
 FILLED = 1
 EMPTY = 0
 
 
-class GameMap(Map):
+class GameMap(tcod.map.Map):
     def __init__(self, width: int, height: int):
         super(GameMap, self).__init__(width=width, height=height, order="F")
 
-        # self.transparent[:] = False
-        # self.walkable[:] = False
-        # self.cave_map = np.zeros_like(self.walkable, dtype=int, order="F")
         self.cave_map: np.array = np.zeros((width, height), order="F")
-        self.explored: np.array = np.full((width, height), order="F", fill_value=False)
+        self._explored: np.array = np.full((width, height), order="F", fill_value=False)
+        self.tile_map: np.array = np.zeros((width, height), order="F")
 
-    def explore(self, point: Point):
-        self.explored[point.x, point.y] = True
+    def is_explored(self, point: Point) -> bool:
+        return self._explored[point.x, point.y]
+
+    def explore(self, point: Point) -> None:
+        self._explored[point.x, point.y] = True
 
     @property
-    def tiles(self):
+    def tiles(self) -> Iterator[Tile]:
         for i in range(self.height):
             for j in range(self.width):
                 point = Point(x=j, y=i)
@@ -51,23 +57,6 @@ class GameMap(Map):
                 self.walkable[x, y] = True
                 self.transparent[x, y] = True
 
-    # def make_cave(
-    #     self,
-    #     map_width: int,
-    #     map_height: int,
-    #     player: Entity,
-    #     initial_chance: float = 0.4,
-    # ):
-    #     self.initialize_cave(map_width, map_height, initial_chance)
-    #     for i in range(1, map_height - 1):
-    #         for j in range(1, map_width - 1):
-    #             count1 = self.one_step_neighbor_count(
-    #                 Point(x=j, y=i)
-    #             )  # 1-step neighbors
-    #             count2 = self.two_step_neighbor_count(
-    #                 Point(x=j, y=i)
-    #             )  # 2-step neighbors
-
     def create_h_tunnel(self, x1: int, x2: int, y):
         for x in range(min(x1, x2), max(x1, x2) + 1):
             self.walkable[x, y] = True
@@ -77,58 +66,6 @@ class GameMap(Map):
         for y in range(min(y1, y2), max(y1, y2) + 1):
             self.walkable[x, y] = True
             self.transparent[x, y] = True
-
-    # def make_map(
-    #     self,
-    #     max_rooms: int,
-    #     room_min_size: int,
-    #     room_max_size: int,
-    #     map_width: int,
-    #     map_height: int,
-    #     player: Entity,
-    #     num_attempts: int = 200,
-    # ):
-    #     rooms = []
-    #     num_rooms = 0
-
-    # def initialize_cave(self, map_width: int, map_height: int, initial_chance: float):
-    #     buffer_map = np.copy(self.cave_map)
-    #
-    #     for i in range(map_height):
-    #         for j in range(map_width):
-    #             if i == 0 or j == 0 or i == map_height - 1 or j == map_width - 1:
-    #                 buffer_map[j, i] = FILLED
-    #                 continue
-    #
-    #             if random.random() < initial_chance:
-    #                 buffer_map[j, i] = FILLED
-    #             else:
-    #                 buffer_map[j, i] = EMPTY
-    #
-    #     self.cave_map = buffer_map
-    #
-    #     for i in range(self.height):
-    #         for j in range(self.width):
-    #             if self.cave_map[j, i] == FILLED:
-    #                 self.walkable[j, i] = False
-    #                 self.transparent[j, i] = False
-    #             else:
-    #                 self.walkable[j, i] = True
-    #                 self.transparent[j, i] = True
-
-    # def one_step_neighbor_count(self, point: Point) -> int:
-    #     count = 0
-    #     for neighbor in point.all_neighbors:
-    #         if (
-    #             neighbor.x < 0
-    #             or self.width <= neighbor.x
-    #             or neighbor.y < 0
-    #             or self.height <= neighbor.y
-    #         ):
-    #             pass
-    #         elif self.cave_map[neighbor.x, neighbor.y] == FILLED:
-    #             count += 1
-    #     return count
 
     def in_bounds(self, point: Point) -> bool:
         return 0 <= point.x < self.width and 0 <= point.y < self.height
@@ -178,73 +115,42 @@ class GameMap(Map):
 
         return count
 
-    # def two_step_neighbor_count(self, point: Point) -> int:
-    #     count = 0
-    #     for i in range(-2, 2):
-    #         for j in range(-2, 2):
-    #             if (abs(i) == 2 and abs(j) == 2):
-    #                 continue
-    #
-    #             neighbor = point + Point(x=j, y=i)
-    #             if (
-    #                 neighbor.x < 0
-    #                 or self.width <= neighbor.x
-    #                 or neighbor.y < 0
-    #                 or self.height <= neighbor.y
-    #             ):
-    #                 pass
-    #             elif self.cave_map[neighbor.x, neighbor.y] == FILLED:
-    #                 count += 1
-    #     return count
-
-    # def cave_smooth_step(self, min_count: int, max_count: int):
-    #
-    #     for i in range(1, self.height - 1):
-    #         for j in range(1, self.width - 1):
-    #             point = Point(x=j, y=i)
-    #             count1 = self.one_step_neighbor_count(point)
-    #             count2 = self.two_step_neighbor_count(point)
-    #             if count1 >= min_count or count2 < max_count:
-    #                 self.cave_map[j, i] = FILLED
-    #             else:
-    #                 self.cave_map[j, i] = EMPTY
-
     def place_tile(self, point: Point, tile: Tile):
-        self.walkable[point.x, point.y] = tile.walkable
-        self.transparent[point.x, point.y] = tile.transparent
+        x, y = point
+        self.walkable[x, y] = tile.walkable
+        self.transparent[x, y] = tile.transparent
+        self.tile_map[x, y] = tile.label.value
 
         if tile.label == TileType.CAVE:
-            self.cave_map[point.x, point.y] = FILLED
+            self.cave_map[x, y] = FILLED
         elif tile.label == TileType.FLOOR:
-            self.cave_map[point.x, point.y] = EMPTY
+            self.cave_map[x, y] = EMPTY
 
-    def render(self, fov_map: tcod.map.Map):
-        for i in range(0, self.height):
-            for j in range(0, self.width):
-                point = Point(x=j, y=i)
-                if self.is_blocked(point=point):
-                    tile = Tile.wall(point=point)
-                else:
-                    tile = Tile.floor(point=point)
+    def get_tile(self, point: Point, fov_map: tcod.map.Map) -> Optional[Tile]:
+        if not self.in_bounds(point):
+            return None
 
-                tile.visible = fov_map.fov[point.x, point.y]
+        label = TileType(self.tile_map[point.x, point.y])
+        tile = Tile.from_label(point=point, label=label)
+        tile.visible = fov_map.fov[point.x, point.y]
+        return tile
 
+    def render(self, fov_map: tcod.map.Map, camera: Camera):
+        for row, y in enumerate(range(camera.top, camera.bottom)):
+            for col, x in enumerate(range(camera.left, camera.right)):
+                point = Point(x, y)
+                if not self.in_bounds(point):
+                    continue
+
+                tile = self.get_tile(point, fov_map=fov_map)
+                tile.visible = fov_map.fov[x, y]
                 if tile.visible:
-                    self.explore(point=point)
-
-                tile.explored = self.explored[point.x, point.y]
+                    self.explore(point)
+                tile.explored = self.is_explored(point)
 
                 if tile.explored:
-                    blt.printf(x=point.x, y=point.y, s=f"[color={tile.color}]{tile.char}[/color]")
-
-        #
-        # for tile in self.tiles:
-        #     tile.visible = fov_map.fov[tile.x, tile.y]
-        #
-        #     if tile.visible:
-        #         self.explore(tile.point)
-        #
-        #     tile.explored = self.explored[tile.x, tile.y]
-        #
-        #     if tile.explored:
-        #         blt.printf(x=tile.x, y=tile.y, s=f"[color={tile.color}]{tile.char}[/color]")
+                    blt.printf(
+                        x=col,
+                        y=row,
+                        s=f"[color={tile.color}]{tile.char}[/color]"
+                    )

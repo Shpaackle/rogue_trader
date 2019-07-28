@@ -1,3 +1,11 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from entity import Entity
+
+
 class Fighter:
     def __init__(self, hp: int, defense: int, power: int):
         self.max_hp = hp
@@ -22,10 +30,18 @@ class Fighter:
         damage = self.power - target.fighter.defense
 
         if damage > 0:
-            target.fighter.take_damage(amount=damage)
-            results.append({"message": f"{self.owner.name.capitalize()} attacks {target.name} for {str(damage)} hit points."})
+            # target.fighter.take_damage(amount=damage)
+            results.append(
+                {
+                    "message": f"{self.owner.name.capitalize()} attacks {target.name} for {str(damage)} hit points."
+                }
+            )
             results.extend(target.fighter.take_damage(damage))
         else:
-            results.append({"message": f"{self.owner.name.capitalize()} attacks {target.name} but does no damage."})
+            results.append(
+                {
+                    "message": f"{self.owner.name.capitalize()} attacks {target.name} but does no damage."
+                }
+            )
 
         return results

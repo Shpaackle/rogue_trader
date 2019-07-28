@@ -1,9 +1,13 @@
+from __future__ import annotations
+
 from typing import List, Optional
 
 from bearlibterminal import terminal as blt
 
+from camera import Camera
 from colors import Color
 from components.fighter import Fighter
+from death_functions import kill_monster, kill_player
 from entity import Entity, get_blocking_entities_at_location
 from fov_functions import initialize_fov, recompute_fov
 from game_states import GameStates
@@ -11,7 +15,7 @@ from input_handlers import handle_keys
 from map_objects.game_map import GameMap
 from map_objects.map_generator import MapGenerator
 from map_objects import Point
-from render_functions import render_all
+from render_functions import render_all, RenderOrder
 
 
 def main():
@@ -43,7 +47,13 @@ def main():
 
     fighter_component: Fighter = Fighter(hp=30, defense=2, power=5)
     player: Entity = Entity(
-        position=Point(x=0, y=0), char="@", color=Color.WHITE, name="Player", blocks=True, fighter=fighter_component
+        position=Point(x=0, y=0),
+        char="@",
+        color=Color.WHITE,
+        name="Player",
+        blocks=True,
+        render_order=RenderOrder.ACTOR,
+        fighter=fighter_component,
     )
     entities: List[Entity] = [player]
 
@@ -51,17 +61,24 @@ def main():
         map_width=map_width, map_height=map_height
     )
 
-    map_generator.make_map(width=map_width, height=map_height, entities=entities, min_monsters=min_monsters, max_monsters=max_monsters)
+    map_generator.make_map(
+        width=map_width,
+        height=map_height,
+        entities=entities,
+        min_monsters=min_monsters,
+        max_monsters=max_monsters,
+    )
     # map_generator.generate_caves(width=map_width, height=map_height)
 
     game_map: GameMap = map_generator.game_map
 
-    fov_update: bool = True
+    # fov_update: bool = True
 
     fov_map = initialize_fov(game_map)
 
     player.position = map_generator.player_start_point
 
+    camera = Camera(player=player, width=map_width, height=map_height)
     blt.open()
     blt.composition(True)
     blt.set(f"window: size={screen_width}x{screen_height}, title={window_title}")
@@ -69,19 +86,19 @@ def main():
     game_state = GameStates.PLAYER_TURN
 
     while game_running:
-        if fov_update:
+        if camera.fov_update:
             recompute_fov(
                 fov_map, player.position, fov_radius, fov_light_walls, fov_algorithm
             )
         render_all(
             entities=entities,
+            player=player,
             game_map=game_map,
             fov_map=fov_map,
-            fov_update=fov_update,
-            colors=colors,
+            camera=camera
         )
 
-        fov_update = False
+        camera.fov_update = False
 
         # blt.refresh()
 
@@ -101,15 +118,19 @@ def main():
             if movement and game_state == GameStates.PLAYER_TURN:
                 destination = player.position + movement
                 if not game_map.is_blocked(destination):
-                    target = get_blocking_entities_at_location(entities=entities, destination=destination)
+                    target = get_blocking_entities_at_location(
+                        entities=entities, destination=destination
+                    )
 
                     if target:
                         attack_results = player.fighter.attack(target=target)
                         player_turn_results.extend(attack_results)
+                        camera.fov_update = True
                     else:
                         player.move(movement)
+                        camera.recenter()
 
-                        fov_update = True
+                        # fov_update = True
 
                     game_state = GameStates.ENEMY_TURN
 
@@ -121,12 +142,22 @@ def main():
                     print(message)
 
                 if dead_entity:
-                    pass  # We'll do something here momentarily
+                    if dead_entity == player:
+                        message, game_state = kill_player(player=dead_entity)
+                    else:
+                        message = kill_monster(monster=dead_entity)
+
+                    print(message)
 
             if game_state == GameStates.ENEMY_TURN:
                 for entity in entities[1:]:
                     if entity.ai:
-                        enemy_turn_results = entity.ai.take_turn(target=player, fov_map=fov_map, game_map=game_map, entities=entities)
+                        enemy_turn_results = entity.ai.take_turn(
+                            target=player,
+                            fov_map=fov_map,
+                            game_map=game_map,
+                            entities=entities,
+                        )
 
                         for enemy_turn_result in enemy_turn_results:
                             message = enemy_turn_result.get("message")
@@ -136,8 +167,18 @@ def main():
                                 print(message)
 
                             if dead_entity:
-                                pass
+                                if dead_entity == player:
+                                    message, game_state = kill_player(player=dead_entity)
+                                else:
+                                    message = kill_monster(monster=dead_entity)
 
+                                print(message)
+                                camera.fov_update = True
+
+                                if game_state == GameStates.PLAYER_DEAD:
+                                    break
+                        if game_state == GameStates.PLAYER_DEAD:
+                            break
                 else:
                     game_state = GameStates.PLAYER_TURN
 
