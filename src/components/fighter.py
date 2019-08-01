@@ -24,7 +24,7 @@ class Fighter:
 
         return results
 
-    def attack(self, target: "Entity"):
+    def attack(self, target: Entity):
         results = []
 
         damage = self.power - target.fighter.defense

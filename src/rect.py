@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from typing import Generator
+from dataclasses import dataclass
 
 from map_objects.point import Point
 
 
+@dataclass(init=True, repr=True, eq=True)
 class Rect:
-    def __init__(self, position: Point, width: int, height: int):
-        self.position: Point = position
-        self.width: int = width
-        self.height: int = height
+    position: Point
+    width: int
+    height: int
 
     def __iter__(self):
         for j in range(self.height):
@@ -81,7 +81,7 @@ class Rect:
         )
 
     def in_bounds(self, point: Point) -> bool:
-        return 0 <= point.x < self.width and 0 <= point.y < self.height
+        return self.left <= point.x < self.right and self.top <= point.y < self.bottom
 
     @classmethod
     def from_center(cls, center: Point, width: int, height: int):

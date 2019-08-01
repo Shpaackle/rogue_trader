@@ -6,7 +6,7 @@ from typing import List
 
 import numpy as np
 
-from colors import Color
+from colors import Colors
 from components.ai import BasicMonster
 from components.fighter import Fighter
 from entity import Entity
@@ -31,7 +31,9 @@ class MapGenerator:
 
     def __init__(self, map_width: int, map_height: int):
         self.game_map: GameMap = GameMap(width=map_width, height=map_height)
-        self.visited_map: np.array = np.full_like(self.game_map.transparent, fill_value=False, order="F")
+        self.visited_map: np.array = np.full_like(
+            self.game_map.transparent, fill_value=False, order="F"
+        )
 
     @property
     def player_start_point(self) -> Point:
@@ -45,10 +47,19 @@ class MapGenerator:
     def map_height(self):
         return self.game_map.height
 
-    def make_map(self, width: int, height: int, entities: List[Entity], min_monsters: int, max_monsters: int):
+    def make_map(
+        self,
+        width: int,
+        height: int,
+        entities: List[Entity],
+        min_monsters: int,
+        max_monsters: int,
+    ):
         self.generate_caves(width=width, height=height)
 
-        self.place_entities(entities=entities, min_monsters=min_monsters, max_monsters=max_monsters)
+        self.place_entities(
+            entities=entities, min_monsters=min_monsters, max_monsters=max_monsters
+        )
 
     def generate_caves(self, width: int, height: int):
         self.initialize_cave(width=width, height=height)
@@ -162,7 +173,9 @@ class MapGenerator:
             tile = Tile.empty(point)
         return tile
 
-    def place_entities(self, entities: List[Entity], min_monsters: int, max_monsters: int):
+    def place_entities(
+        self, entities: List[Entity], min_monsters: int, max_monsters: int
+    ):
         number_of_monsters: int = random.randint(min_monsters, max_monsters)
 
         for i in range(number_of_monsters):
@@ -172,10 +185,28 @@ class MapGenerator:
                 if random.randint(0, 100) < 80:
                     fighter_component: Fighter = Fighter(hp=10, defense=0, power=3)
                     ai_component: BasicMonster = BasicMonster()
-                    monster: Entity = Entity(position=point, char="o", color=Color.LIGHT_GREEN, name="Orc", blocks=True, render_order=RenderOrder.ACTOR, fighter=fighter_component, ai=ai_component)
+                    monster: Entity = Entity(
+                        position=point,
+                        char="o",
+                        color=Colors.LIGHT_GREEN,
+                        name="Orc",
+                        blocks=True,
+                        render_order=RenderOrder.ACTOR,
+                        fighter=fighter_component,
+                        ai=ai_component,
+                    )
                 else:
                     fighter_component: Fighter = Fighter(hp=16, defense=1, power=4)
                     ai_component: BasicMonster = BasicMonster()
-                    monster: Entity = Entity(position=point, char="T", color=Color.DARKER_GREEN, name="Troll", blocks=True, render_order=RenderOrder.ACTOR, fighter=fighter_component, ai=ai_component)
+                    monster: Entity = Entity(
+                        position=point,
+                        char="T",
+                        color=Colors.DARKER_GREEN,
+                        name="Troll",
+                        blocks=True,
+                        render_order=RenderOrder.ACTOR,
+                        fighter=fighter_component,
+                        ai=ai_component,
+                    )
 
                 entities.append(monster)

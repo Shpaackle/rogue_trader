@@ -7,6 +7,7 @@ from bearlibterminal import terminal as blt
 
 from map_objects import Point
 from rect import Rect
+from ui.panel import Panel
 
 if TYPE_CHECKING:
     import tcod.map
@@ -31,6 +32,7 @@ class Camera(Rect):
         self.center = player.position
         self.player: Entity = player
         self._fov_update: bool = True
+        self.ui_panel: Panel = Panel(position=Point(0, 0), width=width, height=height-5)
 
     def __iter__(self) -> Iterator["camera_view"]:
         camera_view = namedtuple("camera_view", ["x", "y", "map_point"])

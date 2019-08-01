@@ -5,7 +5,7 @@ from typing import List, Optional
 from bearlibterminal import terminal as blt
 import tcod
 
-from colors import Color
+from colors import Colors
 from map_objects.game_map import GameMap
 from map_objects.point import Point
 from render_functions import RenderOrder
@@ -20,7 +20,7 @@ class Entity:
         self,
         position: Point,
         char: str,
-        color: Color,
+        color: Colors,
         name: str,
         blocks: bool = False,
         render_order: RenderOrder = RenderOrder.CORPSE,
@@ -29,7 +29,7 @@ class Entity:
     ):
         self.position: Point = position
         self.char: str = char
-        self.color: Color = color
+        self.color: Colors = color
         self.name: str = name
         self.blocks: bool = blocks
         self.render_order: RenderOrder = render_order
@@ -130,8 +130,9 @@ class Entity:
         """ Draw the entity to the terminal """
         if point is None:
             point = self.position
+        color = blt.color_from_argb(*self.color.argb)
         blt.printf(
-            x=point.x, y=point.y, s=f"[color={self.color.value}]{self.char}[/color]"
+            x=point.x * 2, y=point.y * 2, s=f"[font=map][color={color}]{self.char}[/color][/font]"
         )
 
 

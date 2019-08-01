@@ -5,7 +5,7 @@ from typing import List, Optional
 from bearlibterminal import terminal as blt
 
 from camera import Camera
-from colors import Color
+from colors import Colors
 from components.fighter import Fighter
 from death_functions import kill_monster, kill_player
 from entity import Entity, get_blocking_entities_at_location
@@ -15,22 +15,34 @@ from input_handlers import handle_keys
 from map_objects.game_map import GameMap
 from map_objects.map_generator import MapGenerator
 from map_objects import Point
+from rect import Rect
 from render_functions import render_all, RenderOrder
 
 
 def main():
-    screen_width: int = 120
-    screen_height: int = 45
+    screen_width: int = 120 * 2
+    screen_height: int = 45 * 2
     window_title: str = "Rogue Trader"
 
+    map_font = "map font: mplus-1p-bold.ttf, size=12, spacing=2x2"
+    ui_font = "ui_font font: VeraMono.ttf, size=8, spacing=2x2"
+    bar_font = "bar font: mplus-1p-bold.ttf, size=6, spacing=2x2"
+    hover_font = "hover font: mplus-1p-bold.ttf, size=6, spacing=1x1"
+
     map_width: int = 80
-    map_height: int = 40
+    map_height: int = 80
+    camera_width: int = 70
+    camera_height: int = 35
+    ui_height: int = 7
+    bar_width: int = 20
 
     room_min_size: int = 10
     room_max_size: int = 6
     max_rooms: int = 30
     max_monsters: int = 10
     min_monsters: int = 3
+
+    ui_area: Rect = Rect(position=Point(x=0, y=camera_height+1), width=screen_width, height=ui_height)
 
     fov_algorithm: int = 0
     fov_light_walls: bool = True
@@ -49,7 +61,7 @@ def main():
     player: Entity = Entity(
         position=Point(x=0, y=0),
         char="@",
-        color=Color.WHITE,
+        color=Colors.WHITE,
         name="Player",
         blocks=True,
         render_order=RenderOrder.ACTOR,
@@ -78,10 +90,14 @@ def main():
 
     player.position = map_generator.player_start_point
 
-    camera = Camera(player=player, width=map_width, height=map_height)
+    camera = Camera(player=player, width=camera_width, height=camera_height)
     blt.open()
     blt.composition(True)
-    blt.set(f"window: size={screen_width}x{screen_height}, title={window_title}")
+    blt.set(f"window: size={screen_width}x{screen_height}, title={window_title}, cellsize=8x8")
+    blt.set(f"{map_font}")
+    blt.set(f"{ui_font}")
+    blt.set(f"{bar_font}")
+    blt.set(f"{hover_font}")
 
     game_state = GameStates.PLAYER_TURN
 
@@ -95,7 +111,8 @@ def main():
             player=player,
             game_map=game_map,
             fov_map=fov_map,
-            camera=camera
+            camera=camera,
+            bar_width=bar_width
         )
 
         camera.fov_update = False

@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from enum import auto, Enum
 
-from colors import Color
+from bearlibterminal import terminal as blt
+
+from colors import Colors
 from map_objects.point import Point
 
 
@@ -61,7 +63,7 @@ class Tile:
         else:
             light = "DARK"
 
-        return Color[f"{light}_{label}"].value
+        return blt.color_from_argb(*Colors[f"{light}_{label}"].argb)
 
     @property
     def char(self) -> str:

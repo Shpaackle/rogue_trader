@@ -150,7 +150,7 @@ class GameMap(tcod.map.Map):
 
                 if tile.explored:
                     blt.printf(
-                        x=col,
-                        y=row,
-                        s=f"[color={tile.color}]{tile.char}[/color]"
+                        x=col * 2,
+                        y=row * 2,
+                        s=f"[font=map][color={tile.color}]{tile.char}[/color][/font]"
                     )

@@ -13,10 +13,10 @@ class BasicMonster:
 
     def take_turn(
         self,
-        target: "Entity",
+        target: Entity,
         fov_map: tcod.map.Map,
-        game_map: "GameMap",
-        entities: List["Entity"],
+        game_map: GameMap,
+        entities: List[Entity],
     ):
         results = []
 

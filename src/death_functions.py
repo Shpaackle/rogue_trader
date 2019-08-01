@@ -2,9 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import tcod
-
-from colors import Color
+from colors import Colors
 from game_states import GameStates
 from render_functions import RenderOrder
 
@@ -15,7 +13,7 @@ if TYPE_CHECKING:
 
 def kill_player(player: Entity):
     player.char = "%"
-    player.color = Color.RED
+    player.color = Colors.RED
 
     return "You died!", GameStates.PLAYER_DEAD
 
@@ -24,7 +22,7 @@ def kill_monster(monster: Entity):
     death_message = f"{monster.name.capitalize()} is dead!"
 
     monster.char = "%"
-    monster.color = Color.RED
+    monster.color = Colors.RED
     monster.blocks = False
     monster.fighter = None
     monster.ai = None
