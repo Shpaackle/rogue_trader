@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from colors import Colors
+from game_messages import Message
+
 if TYPE_CHECKING:
     from entity import Entity
 
@@ -33,14 +36,20 @@ class Fighter:
             # target.fighter.take_damage(amount=damage)
             results.append(
                 {
-                    "message": f"{self.owner.name.capitalize()} attacks {target.name} for {str(damage)} hit points."
+                    "message": Message(
+                        f"{self.owner.name.capitalize()} attacks {target.name} for {str(damage)} hit points.",
+                        Colors.WHITE,
+                    )
                 }
             )
             results.extend(target.fighter.take_damage(damage))
         else:
             results.append(
                 {
-                    "message": f"{self.owner.name.capitalize()} attacks {target.name} but does no damage."
+                    "message": Message(
+                        f"{self.owner.name.capitalize()} attacks {target.name} but does no damage.",
+                        Colors.WHITE,
+                    )
                 }
             )
 

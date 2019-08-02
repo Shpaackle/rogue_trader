@@ -10,6 +10,7 @@ from components.fighter import Fighter
 from death_functions import kill_monster, kill_player
 from entity import Entity, get_blocking_entities_at_location
 from fov_functions import initialize_fov, recompute_fov
+from game_messages import MessageLog
 from game_states import GameStates
 from input_handlers import handle_keys
 from map_objects.game_map import GameMap
@@ -25,16 +26,23 @@ def main():
     window_title: str = "Rogue Trader"
 
     map_font = "map font: mplus-1p-bold.ttf, size=12, spacing=2x2"
-    ui_font = "ui_font font: VeraMono.ttf, size=8, spacing=2x2"
+    ui_font = "ui_font font: mplus-1p-bold.ttf, size=10"
     bar_font = "bar font: mplus-1p-bold.ttf, size=6, spacing=2x2"
-    hover_font = "hover font: mplus-1p-bold.ttf, size=6, spacing=1x1"
+    hover_font = "hover font: mplus-1p-bold.ttf, size=6"
 
     map_width: int = 80
     map_height: int = 80
-    camera_width: int = 70
-    camera_height: int = 35
-    ui_height: int = 7
-    bar_width: int = 20
+    camera_width: int = 66
+    camera_height: int = 33
+
+    bar_width: int = 15
+    panel_height: int = 12
+    panel_y = screen_height - (panel_height * 2)
+    ui_panel: Rect = Rect(position=Point(x=0, y=panel_y), width=screen_width, height=panel_height*2)
+
+    message_x = (bar_width + 2) * 2
+    message_width = screen_width - ((bar_width - 2) * 2)
+    message_height = (panel_height - 1)
 
     room_min_size: int = 10
     room_max_size: int = 6
@@ -42,18 +50,9 @@ def main():
     max_monsters: int = 10
     min_monsters: int = 3
 
-    ui_area: Rect = Rect(position=Point(x=0, y=camera_height+1), width=screen_width, height=ui_height)
-
     fov_algorithm: int = 0
     fov_light_walls: bool = True
     fov_radius: int = 10
-
-    colors: dict = {
-        "dark_wall": blt.color_from_argb(0, 100, 100, 100),
-        "dark_ground": blt.color_from_argb(0, 50, 50, 150),
-        "light_wall": blt.color_from_argb(0, 130, 100, 50),
-        "light_ground": blt.color_from_argb(0, 200, 180, 50),
-    }
 
     game_running: bool = True
 
@@ -88,6 +87,8 @@ def main():
 
     fov_map = initialize_fov(game_map)
 
+    message_log = MessageLog(message_x, message_width, message_height)
+
     player.position = map_generator.player_start_point
 
     camera = Camera(player=player, width=camera_width, height=camera_height)
@@ -112,6 +113,8 @@ def main():
             game_map=game_map,
             fov_map=fov_map,
             camera=camera,
+            message_log=message_log,
+            ui_panel=ui_panel,
             bar_width=bar_width
         )
 
@@ -156,15 +159,16 @@ def main():
                 dead_entity = player_turn_result.get("dead")
 
                 if message:
-                    print(message)
+                    message_log.add_message(message)
 
                 if dead_entity:
                     if dead_entity == player:
-                        message, game_state = kill_player(player=dead_entity)
+                        message = kill_player(player=dead_entity)
+                        game_state = GameStates.PLAYER_DEAD
                     else:
                         message = kill_monster(monster=dead_entity)
 
-                    print(message)
+                    message_log.add_message(message)
 
             if game_state == GameStates.ENEMY_TURN:
                 for entity in entities[1:]:
@@ -181,7 +185,7 @@ def main():
                             dead_entity = enemy_turn_result.get("dead")
 
                             if message:
-                                print(message)
+                                message_log.add_message(message)
 
                             if dead_entity:
                                 if dead_entity == player:
@@ -189,7 +193,7 @@ def main():
                                 else:
                                     message = kill_monster(monster=dead_entity)
 
-                                print(message)
+                                message_log.add_message(message)
                                 camera.fov_update = True
 
                                 if game_state == GameStates.PLAYER_DEAD:

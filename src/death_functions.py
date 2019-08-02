@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from colors import Colors
-from game_states import GameStates
+from game_messages import Message
 from render_functions import RenderOrder
 
 
@@ -15,11 +15,11 @@ def kill_player(player: Entity):
     player.char = "%"
     player.color = Colors.RED
 
-    return "You died!", GameStates.PLAYER_DEAD
+    return Message("You died!", Colors.RED)
 
 
 def kill_monster(monster: Entity):
-    death_message = f"{monster.name.capitalize()} is dead!"
+    death_message = Message(f"{monster.name.capitalize()} is dead!", Colors.ORANGE)
 
     monster.char = "%"
     monster.color = Colors.RED

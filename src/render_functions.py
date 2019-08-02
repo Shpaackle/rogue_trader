@@ -12,20 +12,21 @@ if TYPE_CHECKING:
 
     from camera import Camera
     from entity import Entity
+    from game_messages import MessageLog
     from map_objects.game_map import GameMap
-    from ui.panel import Panel
+    from rect import Rect
 
 
 LINE_STYLE = {
-            'T': '─',
-            'B': '─',
-            'L': '│',
-            'R': '│',
-            'TL': '┌',
-            'TR': '┐',
-            'BL': '└',
-            'BR': '┘',
-        }
+    "T": "─",
+    "B": "─",
+    "L": "│",
+    "R": "│",
+    "TL": "┌",
+    "TR": "┐",
+    "BL": "└",
+    "BR": "┘",
+}
 
 
 class RenderOrder(Enum):
@@ -34,7 +35,16 @@ class RenderOrder(Enum):
     ACTOR = auto()
 
 
-def render_bar(x: int, y: int, total_width: int, name: str, value: int, maximum: int, bar_color: Colors, back_color: Colors, bar_width: int):
+def render_bar(
+    x: int,
+    y: int,
+    total_width: int,
+    name: str,
+    value: int,
+    maximum: int,
+    bar_color: Colors,
+    back_color: Colors,
+):
     bar_width = int(float(value) / maximum * total_width)
 
     if bar_width <= 0:
@@ -44,23 +54,27 @@ def render_bar(x: int, y: int, total_width: int, name: str, value: int, maximum:
     bk_color = blt.color_from_argb(*back_color.argb)
     bar_color = blt.color_from_argb(*bar_color.argb)
 
-    bar = " " * (total_width * 2)
+    bar = " " * total_width
     blt.printf(x, y, s=f"[font=bar][bkcolor={bk_color}]{bar}")
-    blt.printf(x, y, s=f"[font=bar][bkcolor={bar_color}]{bar[:(bar_width * 2)]}")
-    # for i in range(1, total_width - 1):
-    #     color = blt.color_from_argb(*back_color.argb)
-    #     blt.printf(x + i, y, s=f"[font=bar][bkcolor={color}] ")
-    #     blt.printf(x + i, y + 1, s=f"[font=bar][bkcolor={color}] ")
+    blt.printf(x, y, s=f"[font=bar][bkcolor={bar_color}]{bar[:bar_width]}")
 
-    # for i in range(1, bar_width - 1):
-    #     bk_color = blt.color_from_argb(*bar_color.argb)
-    #     blt.printf(x + i, y, s=f"[font=bar][bkcolor={bk_color}] ")
-    #     blt.printf(x + i, y + 1, s=f"[font=bar][bkcolor={bk_color}] ")
-
-    blt.printf(x=int(x + total_width), y=y, s=f"[font=ui_font]{name}: {value:02}/{maximum:02}[/font]")
+    blt.printf(
+        x=int(x + total_width / 2),
+        y=y,
+        s=f"[font=bar_font][spacing=2x2]{name}: {value:02}/{maximum:02}[/font]",
+    )
 
 
-def render_all(entities: List[Entity], player: Entity, game_map: GameMap, fov_map: tcod.map.Map, camera: Camera, bar_width: int):
+def render_all(
+    entities: List[Entity],
+    player: Entity,
+    game_map: GameMap,
+    fov_map: tcod.map.Map,
+    camera: Camera,
+    message_log: MessageLog,
+    ui_panel: Rect,
+    bar_width: int,
+):
     if camera.fov_update:
         # Draw the map
         blt.clear()
@@ -75,7 +89,18 @@ def render_all(entities: List[Entity], player: Entity, game_map: GameMap, fov_ma
                     point = entity.position - camera.top_left
                     entity.draw(point)
 
-        # blt.printf(x=2, y=((camera.height + 1) * 2), s=f"[font=ui_font]HP: {player.fighter.hp:02}/{player.fighter.max_hp:02}[/font]")
-        render_bar(x=0, y=((camera.height + 1) * 2), total_width=bar_width, name="HP", value=player.fighter.hp, maximum=player.fighter.max_hp, bar_color=Colors.RED, back_color=Colors.DARK_RED, bar_width=bar_width)
+        render_bar(
+            x=ui_panel.x,
+            y=ui_panel.y,
+            total_width=bar_width,
+            name="HP",
+            value=player.fighter.hp,
+            maximum=player.fighter.max_hp,
+            bar_color=Colors.RED,
+            back_color=Colors.DARK_RED,
+        )
+
+    for i, message in enumerate(message_log.messages, 0):
+        blt.printf(x=message_log.x, y=ui_panel.y + (i * 2), s=f"[TK_ALIGN_LEFT][color={blt.color_from_argb(*message.color.argb)}][font=ui_font]{message.text}")
 
     blt.refresh()
