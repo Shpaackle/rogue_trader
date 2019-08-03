@@ -1,0 +1,2 @@
+class EntityComponent:
+    owner = None

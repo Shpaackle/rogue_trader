@@ -2,14 +2,17 @@ from __future__ import annotations
 
 from typing import List, TYPE_CHECKING
 
+from components.entity_component import EntityComponent
+
 if TYPE_CHECKING:
     import tcod.map
     from entity import Entity
     from map_objects.game_map import GameMap
 
 
-class BasicMonster:
-    owner = None
+class BasicMonster(EntityComponent):
+    def __init__(self):
+        super(BasicMonster, self).__init__()
 
     def take_turn(
         self,

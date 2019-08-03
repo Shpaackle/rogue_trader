@@ -3,19 +3,20 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from colors import Colors
+from components.entity_component import EntityComponent
 from game_messages import Message
 
 if TYPE_CHECKING:
     from entity import Entity
 
 
-class Fighter:
+class Fighter(EntityComponent):
     def __init__(self, hp: int, defense: int, power: int):
+        super(Fighter, self).__init__()
         self.max_hp = hp
         self.hp = hp
         self.defense = defense
         self.power = power
-        self.owner = None
 
     def take_damage(self, amount: int):
         results = []
