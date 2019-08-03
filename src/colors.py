@@ -21,7 +21,8 @@ class Colors(Enum):
     RED = COLOR(r=255, g=0, b=0, a=0)
     BLUE = COLOR(r=0, g=0, b=50, a=0)
     DARK_RED = COLOR(r=128, g=0, b=0, a=0)
-    ORANGE = COLOR(r=255, b=127, g=0, a=0)
+    ORANGE = COLOR(r=255, g=127, b=0, a=0)
+    LIGHT_GRAY = COLOR(r=159, g=159, b=159, a=0)
 
     @property
     def red(self):

@@ -6,6 +6,7 @@ from typing import List, TYPE_CHECKING
 from bearlibterminal import terminal as blt
 
 from colors import Colors
+from map_objects.point import Point
 
 if TYPE_CHECKING:
     import tcod.map
@@ -13,7 +14,7 @@ if TYPE_CHECKING:
     from camera import Camera
     from entity import Entity
     from game_messages import MessageLog
-    from map_objects.game_map import GameMap
+    from map_objects import GameMap
     from rect import Rect
 
 
@@ -33,6 +34,19 @@ class RenderOrder(Enum):
     CORPSE = 1
     ITEM = auto()
     ACTOR = auto()
+
+
+def get_names_under_mouse(mouse_position: Point, entities: List[Entity], fov_map: tcod.map.Map, camera: Camera) -> str:
+    if not (0 <= mouse_position.x < camera.width - 1 and 0 <= mouse_position.y < camera.height):
+        return ""
+
+    map_point = camera.top_left + mouse_position
+    # blt.printf((camera.width + 1) * 2, 2, f"Map Point = {map_point}")
+
+    names = [entity.name for entity in entities if entity.position == map_point and fov_map.fov[entity.x, entity.y]]
+    names = ", ".join(names)
+
+    return names.capitalize()
 
 
 def render_bar(
@@ -74,6 +88,7 @@ def render_all(
     message_log: MessageLog,
     ui_panel: Rect,
     bar_width: int,
+    mouse_position: Point
 ):
     if camera.fov_update:
         # Draw the map
@@ -100,7 +115,16 @@ def render_all(
             back_color=Colors.DARK_RED,
         )
 
+    names = get_names_under_mouse(mouse_position=mouse_position, entities=entities, fov_map=fov_map, camera=camera)
+    color = blt.color_from_argb(*Colors.LIGHT_GRAY.argb)
+    blt.printf(ui_panel.x, ui_panel.y + 2, s=f"[color={color}]{names}")
+
     for i, message in enumerate(message_log.messages, 0):
-        blt.printf(x=message_log.x, y=ui_panel.y + (i * 2), s=f"[TK_ALIGN_LEFT][color={blt.color_from_argb(*message.color.argb)}][font=ui_font]{message.text}")
+        blt.printf(x=message_log.x, y=ui_panel.y + (i * 2), s=f"[TK_ALIGN_LEFT][color={blt.color_from_argb(*message.color.argb)}]{message.text}")
+
+    blt.printf(camera.width * 2 + 2, 4, f"Mouse position: {mouse_position}")
+    map_point = Point(x=abs(mouse_position.x - camera.center.x), y=abs(mouse_position.y - camera.center.y))
+    blt.printf(camera.width * 2 + 2, 6, f"Map point: {map_point}")
+    blt.printf((camera.width + 1) * 2, 8, f"Player position: {player.position}")
 
     blt.refresh()

@@ -32,10 +32,10 @@ def main():
 
     map_width: int = 80
     map_height: int = 80
-    camera_width: int = 66
+    camera_width: int = 65
     camera_height: int = 33
 
-    bar_width: int = 15
+    bar_width: int = 20
     panel_height: int = 12
     panel_y = screen_height - (panel_height * 2)
     ui_panel: Rect = Rect(position=Point(x=0, y=panel_y), width=screen_width, height=panel_height*2)
@@ -95,12 +95,14 @@ def main():
     blt.open()
     blt.composition(True)
     blt.set(f"window: size={screen_width}x{screen_height}, title={window_title}, cellsize=8x8")
+    blt.set("input: filter={keyboard, mouse+}")
     blt.set(f"{map_font}")
     blt.set(f"{ui_font}")
     blt.set(f"{bar_font}")
     blt.set(f"{hover_font}")
 
     game_state = GameStates.PLAYER_TURN
+    mouse_position = Point(x=blt.state(blt.TK_MOUSE_X)//2, y=blt.state(blt.TK_MOUSE_Y)//2)
 
     while game_running:
         if camera.fov_update:
@@ -115,7 +117,8 @@ def main():
             camera=camera,
             message_log=message_log,
             ui_panel=ui_panel,
-            bar_width=bar_width
+            bar_width=bar_width,
+            mouse_position=mouse_position
         )
 
         camera.fov_update = False
@@ -124,6 +127,9 @@ def main():
 
         if blt.has_input():
             terminal_input: int = blt.read()
+
+            mouse_position = Point(x=blt.state(blt.TK_MOUSE_X) // 2, y=blt.state(blt.TK_MOUSE_Y) // 2)
+            camera.fov_update = True
 
             action: dict = handle_keys(terminal_input)
 
@@ -189,7 +195,8 @@ def main():
 
                             if dead_entity:
                                 if dead_entity == player:
-                                    message, game_state = kill_player(player=dead_entity)
+                                    message = kill_player(player=dead_entity)
+                                    game_state = GameStates.PLAYER_DEAD
                                 else:
                                     message = kill_monster(monster=dead_entity)
 
