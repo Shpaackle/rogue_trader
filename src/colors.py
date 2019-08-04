@@ -25,6 +25,7 @@ class Colors(Enum):
     LIGHT_GRAY = COLOR(r=159, g=159, b=159, a=0)
     VIOLET = COLOR(r=127, g=0, b=255, a=0)
     YELLOW = COLOR(r=255, g=255, b=0, a=0)
+    GREEN = COLOR(r=0, g=255, b=0, a=0)
 
     @property
     def red(self):

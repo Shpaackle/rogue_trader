@@ -48,9 +48,9 @@ def main():
     room_min_size: int = 10
     room_max_size: int = 6
     max_rooms: int = 30
-    max_monsters: int = 15
+    max_monsters: int = 10
     min_monsters: int = 5
-    max_items: int = 15
+    max_items: int = 50
 
     fov_algorithm: int = 0
     fov_light_walls: bool = True
@@ -138,16 +138,23 @@ def main():
             mouse_position = Point(x=blt.state(blt.TK_MOUSE_X) // 2, y=blt.state(blt.TK_MOUSE_Y) // 2)
             camera.fov_update = True
 
-            action: dict = handle_keys(terminal_input)
+            action: dict = handle_keys(terminal_input, game_state)
 
             movement: Optional[Point] = action.get("move", None)
             pickup: bool = action.get("pickup", False)
             show_inventory: bool = action.get("show_inventory", False)
+            inventory_index: Optional[int] = action.get("inventory_index", None)
             exit_game: bool = action.get("exit", False)
+
+            player_turn_results = []
 
             if show_inventory:
                 previous_game_state = game_state
                 game_state = GameStates.SHOW_INVENTORY
+
+            if inventory_index is not None and previous_game_state != GameStates.PLAYER_DEAD and inventory_index < len(player.inventory.items):
+                item = player.inventory.items[inventory_index]
+                player_turn_results.extend(player.inventory.use(item))
 
             if exit_game:
                 if game_state == GameStates.SHOW_INVENTORY:
@@ -155,7 +162,7 @@ def main():
                 else:
                     game_running = False
 
-            player_turn_results = []
+            # player_turn_results = []
 
             if movement and game_state == GameStates.PLAYER_TURN:
                 destination = player.position + movement
@@ -189,6 +196,7 @@ def main():
                 message = player_turn_result.get("message")
                 dead_entity = player_turn_result.get("dead")
                 item_added = player_turn_result.get("item_added")
+                item_consumed = player_turn_result.get("consumed")
 
                 if message:
                     message_log.add_message(message)
@@ -205,6 +213,10 @@ def main():
                 if item_added:
                     entities.remove(item_added)
 
+                    game_state = GameStates.ENEMY_TURN
+                    camera.fov_update = True
+
+                if item_consumed:
                     game_state = GameStates.ENEMY_TURN
                     camera.fov_update = True
 

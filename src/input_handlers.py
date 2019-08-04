@@ -1,9 +1,21 @@
 from bearlibterminal import terminal as blt
 
+from game_states import GameStates
 from map_objects.point import Point
 
 
-def handle_keys(key: int) -> dict:
+def handle_keys(key: int, game_state: GameStates) -> dict:
+    if game_state == GameStates.PLAYER_TURN:
+        return handle_player_turn_keys(key=key)
+    elif game_state == GameStates.PLAYER_DEAD:
+        return handle_player_dead_keys(key=key)
+    elif game_state == GameStates.SHOW_INVENTORY:
+        return handle_inventory_keys(key=key)
+
+    return {}
+
+
+def handle_player_turn_keys(key: int) -> dict:
     if key == blt.TK_UP or key == blt.TK_K:
         return {"move": Point(0, -1)}
     elif key == blt.TK_DOWN or key == blt.TK_J:
@@ -27,5 +39,28 @@ def handle_keys(key: int) -> dict:
 
     if key == blt.TK_ESCAPE or key == blt.TK_Q or key == blt.TK_CLOSE:
         return {"exit": True}
+
+    return {}
+
+
+def handle_player_dead_keys(key: int) -> dict:
+    if key == blt.TK_I:
+        return {"show_inventory": True}
+
+    if key == blt.TK_ESCAPE:
+        return {"exit": True}
+
+    return {}
+
+
+def handle_inventory_keys(key: int) -> dict:
+    index = key - blt.TK_A
+    print(f"index = {index}")
+
+    if key == blt.TK_ESCAPE:
+        return {"exit": True}
+
+    if index >= 0:
+        return {"inventory_index": index}
 
     return {}

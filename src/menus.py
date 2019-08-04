@@ -47,7 +47,7 @@ def menu(camera: Camera, header: str, options: List[str], width: int):
     letter_index = ord("a")
     for i, option_text in enumerate(options):
         text = f"({chr(letter_index + i)}) {option_text}"
-        blt.puts(x=panel.x, y=panel.options_y + i, s=f"{text}", align=blt.TK_ALIGN_LEFT)
+        blt.puts(x=panel.x, y=panel.options_y + i * 2, s=f"{text}", align=blt.TK_ALIGN_LEFT)
 
 
 def inventory_menu(camera: Camera, header: str, inventory: Inventory, inventory_width: int):

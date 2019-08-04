@@ -10,6 +10,7 @@ from colors import Colors
 from components import BasicMonster, Fighter
 from components.item import Item
 from entity import Entity
+from item_functions import heal
 from map_objects.point import Point
 from map_objects.game_map import GameMap
 from map_objects.tile import Tile
@@ -217,7 +218,7 @@ class MapGenerator:
             point: Point = random.choice(self.cave)
 
             if not any([entity for entity in entities if entity.position == point]):
-                item_component = Item()
+                item_component = Item(use_function=heal, amount=4)
                 item = Entity(position=point, char="!", color=Colors.VIOLET, name="Healing Potion", render_order=RenderOrder.ITEM, item=item_component)
 
                 entities.append(item)
