@@ -7,8 +7,8 @@ from typing import List
 import numpy as np
 
 from colors import Colors
-from components.ai import BasicMonster
-from components.fighter import Fighter
+from components import BasicMonster, Fighter
+from components.item import Item
 from entity import Entity
 from map_objects.point import Point
 from map_objects.game_map import GameMap
@@ -54,11 +54,12 @@ class MapGenerator:
         entities: List[Entity],
         min_monsters: int,
         max_monsters: int,
+        max_items: int
     ):
         self.generate_caves(width=width, height=height)
 
         self.place_entities(
-            entities=entities, min_monsters=min_monsters, max_monsters=max_monsters
+            entities=entities, min_monsters=min_monsters, max_monsters=max_monsters, max_items=max_items
         )
 
     def generate_caves(self, width: int, height: int):
@@ -174,9 +175,10 @@ class MapGenerator:
         return tile
 
     def place_entities(
-        self, entities: List[Entity], min_monsters: int, max_monsters: int
+        self, entities: List[Entity], min_monsters: int, max_monsters: int, max_items: int
     ):
         number_of_monsters: int = random.randint(min_monsters, max_monsters)
+        number_of_items: int = random.randint(10, max_items)
 
         for i in range(number_of_monsters):
             point: Point = random.choice(self.cave)
@@ -210,3 +212,12 @@ class MapGenerator:
                     )
 
                 entities.append(monster)
+
+        for i in range(number_of_items):
+            point: Point = random.choice(self.cave)
+
+            if not any([entity for entity in entities if entity.position == point]):
+                item_component = Item()
+                item = Entity(position=point, char="!", color=Colors.VIOLET, name="Healing Potion", render_order=RenderOrder.ITEM, item=item_component)
+
+                entities.append(item)

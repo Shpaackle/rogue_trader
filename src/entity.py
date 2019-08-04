@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import List, Optional, TYPE_CHECKING
 
 from bearlibterminal import terminal as blt
 import tcod
@@ -9,6 +9,11 @@ from colors import Colors
 from map_objects.game_map import GameMap
 from map_objects.point import Point
 from render_functions import RenderOrder
+
+if TYPE_CHECKING:
+    from components import BasicMonster, Fighter
+    from components.inventory import Inventory
+    from components.item import Item
 
 
 class Entity:
@@ -26,6 +31,8 @@ class Entity:
         render_order: RenderOrder = RenderOrder.CORPSE,
         fighter=None,
         ai=None,
+        item=None,
+        inventory=None
     ):
         self.position: Point = position
         self.char: str = char
@@ -35,12 +42,20 @@ class Entity:
         self.render_order: RenderOrder = render_order
         self.fighter = fighter
         self.ai = ai
+        self.item = item
+        self.inventory = inventory
 
         if self.fighter:
             self.fighter.owner = self
 
         if self.ai:
             self.ai.owner = self
+
+        if self.item:
+            self.item.owner = self
+
+        if self.inventory:
+            self.inventory.owner = self
 
     @property
     def x(self) -> int:

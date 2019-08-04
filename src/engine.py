@@ -7,10 +7,11 @@ from bearlibterminal import terminal as blt
 from camera import Camera
 from colors import Colors
 from components.fighter import Fighter
+from components.inventory import Inventory
 from death_functions import kill_monster, kill_player
 from entity import Entity, get_blocking_entities_at_location
 from fov_functions import initialize_fov, recompute_fov
-from game_messages import MessageLog
+from game_messages import Message, MessageLog
 from game_states import GameStates
 from input_handlers import handle_keys
 from map_objects.game_map import GameMap
@@ -47,8 +48,9 @@ def main():
     room_min_size: int = 10
     room_max_size: int = 6
     max_rooms: int = 30
-    max_monsters: int = 10
-    min_monsters: int = 3
+    max_monsters: int = 15
+    min_monsters: int = 5
+    max_items: int = 15
 
     fov_algorithm: int = 0
     fov_light_walls: bool = True
@@ -57,6 +59,7 @@ def main():
     game_running: bool = True
 
     fighter_component: Fighter = Fighter(hp=30, defense=2, power=5)
+    inventory_component: Inventory = Inventory(26)
     player: Entity = Entity(
         position=Point(x=0, y=0),
         char="@",
@@ -65,6 +68,7 @@ def main():
         blocks=True,
         render_order=RenderOrder.ACTOR,
         fighter=fighter_component,
+        inventory=inventory_component
     )
     entities: List[Entity] = [player]
 
@@ -78,6 +82,7 @@ def main():
         entities=entities,
         min_monsters=min_monsters,
         max_monsters=max_monsters,
+        max_items=max_items
     )
     # map_generator.generate_caves(width=map_width, height=map_height)
 
@@ -102,6 +107,7 @@ def main():
     blt.set(f"{hover_font}")
 
     game_state = GameStates.PLAYER_TURN
+    previous_game_state = game_state
     mouse_position = Point(x=blt.state(blt.TK_MOUSE_X)//2, y=blt.state(blt.TK_MOUSE_Y)//2)
 
     while game_running:
@@ -118,7 +124,8 @@ def main():
             message_log=message_log,
             ui_panel=ui_panel,
             bar_width=bar_width,
-            mouse_position=mouse_position
+            mouse_position=mouse_position,
+            game_state=game_state
         )
 
         camera.fov_update = False
@@ -133,11 +140,20 @@ def main():
 
             action: dict = handle_keys(terminal_input)
 
-            exit_game: bool = action.get("exit", False)
             movement: Optional[Point] = action.get("move", None)
+            pickup: bool = action.get("pickup", False)
+            show_inventory: bool = action.get("show_inventory", False)
+            exit_game: bool = action.get("exit", False)
+
+            if show_inventory:
+                previous_game_state = game_state
+                game_state = GameStates.SHOW_INVENTORY
 
             if exit_game:
-                game_running = False
+                if game_state == GameStates.SHOW_INVENTORY:
+                    game_state = previous_game_state
+                else:
+                    game_running = False
 
             player_turn_results = []
 
@@ -159,10 +175,20 @@ def main():
                         # fov_update = True
 
                     game_state = GameStates.ENEMY_TURN
+            elif pickup and game_state == GameStates.PLAYER_TURN:
+                for entity in entities:
+                    if entity.item and entity.position == player.position:
+                        pickup_results = player.inventory.add_item(entity)
+                        player_turn_results.extend(pickup_results)
+
+                        break
+                else:
+                    message_log.add_message(Message("There is nothing here to pick up."))
 
             for player_turn_result in player_turn_results:
                 message = player_turn_result.get("message")
                 dead_entity = player_turn_result.get("dead")
+                item_added = player_turn_result.get("item_added")
 
                 if message:
                     message_log.add_message(message)
@@ -175,6 +201,12 @@ def main():
                         message = kill_monster(monster=dead_entity)
 
                     message_log.add_message(message)
+
+                if item_added:
+                    entities.remove(item_added)
+
+                    game_state = GameStates.ENEMY_TURN
+                    camera.fov_update = True
 
             if game_state == GameStates.ENEMY_TURN:
                 for entity in entities[1:]:

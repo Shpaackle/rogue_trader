@@ -6,7 +6,9 @@ from typing import List, TYPE_CHECKING
 from bearlibterminal import terminal as blt
 
 from colors import Colors
+from game_states import GameStates
 from map_objects.point import Point
+from menus import inventory_menu
 
 if TYPE_CHECKING:
     import tcod.map
@@ -14,6 +16,7 @@ if TYPE_CHECKING:
     from camera import Camera
     from entity import Entity
     from game_messages import MessageLog
+    from game_states import GameStates
     from map_objects import GameMap
     from rect import Rect
 
@@ -88,7 +91,8 @@ def render_all(
     message_log: MessageLog,
     ui_panel: Rect,
     bar_width: int,
-    mouse_position: Point
+    mouse_position: Point,
+    game_state: GameStates
 ):
     if camera.fov_update:
         # Draw the map
@@ -126,5 +130,8 @@ def render_all(
     map_point = Point(x=abs(mouse_position.x - camera.center.x), y=abs(mouse_position.y - camera.center.y))
     blt.printf(camera.width * 2 + 2, 6, f"Map point: {map_point}")
     blt.printf((camera.width + 1) * 2, 8, f"Player position: {player.position}")
+
+    if game_state == GameStates.SHOW_INVENTORY:
+        inventory_menu(camera=camera, header="Press the key next to an item to use it, or Esc to cancel. \n", inventory=player.inventory, inventory_width=50)
 
     blt.refresh()

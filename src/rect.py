@@ -1,15 +1,13 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-
 from map_objects.point import Point
 
 
-@dataclass(init=True, repr=True, eq=True)
 class Rect:
-    position: Point
-    width: int
-    height: int
+    def __init__(self, position: Point, width: int, height: int):
+        self.position: Point = position
+        self.width: int = width
+        self.height: int = height
 
     def __iter__(self):
         for j in range(self.height):
