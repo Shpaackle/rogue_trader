@@ -4,7 +4,7 @@ import math
 from collections import namedtuple
 from dataclasses import dataclass
 from enum import Enum
-from typing import Iterator
+from typing import Generator, Iterator
 
 
 POINT = namedtuple("POINT", ["x", "y"],)
@@ -94,12 +94,12 @@ class Point:
     #     return Point(abs(self.x - point.x), abs(self.y - point.y))
 
     @property
-    def all_neighbors(self) -> "Point":
+    def all_neighbors(self) -> Generator[Point]:
         for direction in [self.N, self.NE, self.E, self.SE, self.S, self.SW, self.W, self.NW]:
             yield direction
 
     @property
-    def direct_neighbors(self) -> "Point":
+    def direct_neighbors(self) -> Point:
         for direction in [self.N, self.E, self.S, self.W]:
             yield direction
 

@@ -59,12 +59,10 @@ def handle_player_dead_keys(key: int) -> dict:
 
 
 def handle_inventory_keys(key: int) -> dict:
-    index = key - blt.TK_A
-    print(f"index = {index}")
-
     if key == blt.TK_ESCAPE:
         return {"exit": True}
 
+    index = key - blt.TK_A
     if index >= 0:
         return {"inventory_index": index}
 

@@ -74,7 +74,6 @@ class MapGenerator:
 
         cave: List[Point] = self.isolate_main_cave(caves)
         self.cave = self.remove_small_walls(cave)
-        print("finished caves")
 
     def find_caves(self) -> List[List[Point]]:
         caves: List[List[Point]] = list()
