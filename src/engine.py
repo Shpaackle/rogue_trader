@@ -14,6 +14,7 @@ from fov_functions import initialize_fov, recompute_fov
 from game_messages import Message, MessageLog
 from game_states import GameStates
 from input_handlers import handle_keys, handle_mouse
+from loader_functions.initialize_new_game import get_constants
 from map_objects.game_map import GameMap
 from map_objects.map_generator import MapGenerator
 from map_objects import Point
@@ -25,39 +26,7 @@ if TYPE_CHECKING:
 
 
 def main():
-    screen_width: int = 120 * 2
-    screen_height: int = 45 * 2
-    window_title: str = "Rogue Trader"
-
-    map_font: str = "map font: mplus-1p-bold.ttf, size=12, spacing=2x2"
-    ui_font: str = "ui_font font: mplus-1p-bold.ttf, size=10"
-    bar_font: str = "bar font: mplus-1p-bold.ttf, size=6, spacing=2x2"
-    hover_font: str = "hover font: mplus-1p-bold.ttf, size=6"
-
-    map_width: int = 80
-    map_height: int = 80
-    camera_width: int = 65
-    camera_height: int = 33
-
-    bar_width: int = 20
-    panel_height: int = 12
-    panel_y: int = screen_height - (panel_height * 2)
-    ui_panel: Rect = Rect(position=Point(x=0, y=panel_y), width=screen_width, height=panel_height*2)
-
-    message_x: int = (bar_width + 2) * 2
-    message_width: int = screen_width - ((bar_width - 2) * 2)
-    message_height: int = (panel_height - 1)
-
-    room_min_size: int = 10
-    room_max_size: int = 6
-    max_rooms: int = 30
-    max_monsters: int = 10
-    min_monsters: int = 5
-    max_items: int = 50
-
-    fov_algorithm: int = 0
-    fov_light_walls: bool = True
-    fov_radius: int = 10
+    constants: dict = get_constants()
 
     game_running: bool = True
 
@@ -76,16 +45,16 @@ def main():
     entities: List[Entity] = [player]
 
     map_generator: MapGenerator = MapGenerator(
-        map_width=map_width, map_height=map_height
+        map_width=constants["map_width"], map_height=constants["map_height"]
     )
 
     map_generator.make_map(
-        width=map_width,
-        height=map_height,
+        width=constants["map_width"],
+        height=constants["map_height"],
         entities=entities,
-        min_monsters=min_monsters,
-        max_monsters=max_monsters,
-        max_items=max_items
+        min_monsters=constants["min_monsters"],
+        max_monsters=constants["max_monsters"],
+        max_items=constants["max_items"]
     )
     # map_generator.generate_caves(width=map_width, height=map_height)
 
@@ -95,19 +64,19 @@ def main():
 
     fov_map: tcod.map.Map = initialize_fov(game_map)
 
-    message_log: MessageLog = MessageLog(message_x, message_width, message_height)
+    message_log: MessageLog = MessageLog(constants["message_x"], constants["message_width"], constants["message_height"])
 
     player.position: Point = map_generator.player_start_point
 
-    camera: Camera = Camera(player=player, width=camera_width, height=camera_height)
+    camera: Camera = Camera(player=player, width=constants["camera_width"], height=constants["camera_height"])
     blt.open()
     blt.composition(True)
-    blt.set(f"window: size={screen_width}x{screen_height}, title={window_title}, cellsize=8x8")
+    blt.set(f"window: size={constants['screen_width']}x{constants['screen_height']}, title={constants['window_title']}, cellsize=8x8")
     blt.set("input: filter={keyboard, mouse+}")
-    blt.set(f"{map_font}")
-    blt.set(f"{ui_font}")
-    blt.set(f"{bar_font}")
-    blt.set(f"{hover_font}")
+    blt.set(f"{constants['map_font']}")
+    blt.set(f"{constants['ui_font']}")
+    blt.set(f"{constants['bar_font']}")
+    blt.set(f"{constants['hover_font']}")
 
     game_state: GameStates = GameStates.PLAYER_TURN
     previous_game_state: GameStates = game_state
@@ -119,7 +88,7 @@ def main():
     while game_running:
         if camera.fov_update:
             recompute_fov(
-                fov_map, player.position, fov_radius, fov_light_walls, fov_algorithm
+                fov_map, player.position, constants["fov_radius"], constants["fov_light_walls"], constants["fov_algorithm"]
             )
         render_all(
             entities=entities,
@@ -128,8 +97,8 @@ def main():
             fov_map=fov_map,
             camera=camera,
             message_log=message_log,
-            ui_panel=ui_panel,
-            bar_width=bar_width,
+            ui_panel=constants["ui_panel"],
+            bar_width=constants["bar_width"],
             mouse_position=mouse_position,
             game_state=game_state
         )
