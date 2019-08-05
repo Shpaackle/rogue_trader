@@ -11,7 +11,7 @@ from components import BasicMonster, Fighter
 from components.item import Item
 from entity import Entity
 from game_messages import Message
-from item_functions import cast_confusion, cast_fireball, cast_lightning, heal
+from item_functions import cast_confuse, cast_fireball, cast_lightning, heal
 from map_objects.point import Point
 from map_objects.game_map import GameMap
 from map_objects.tile import Tile
@@ -223,9 +223,12 @@ class MapGenerator:
                 if item_chance < 70:
                     item_component: Item = Item(use_function=heal, amount=4)
                     item: Entity = Entity(position=point, char="!", color=Colors.VIOLET, name="Healing Potion", render_order=RenderOrder.ITEM, item=item_component)
-                elif item_chance < 85:
+                elif item_chance < 80:
                     item_component: Item = Item(use_function=cast_fireball, targeting=True, targeting_message=Message("Left-click a target tile for the fireball, or right-click to cancel.", Colors.LIGHT_CYAN), damage=12, radius=3)
                     item = Entity(position=point, char="#", color=Colors.RED, name="Fireball Scroll", render_order=RenderOrder.ITEM, item=item_component)
+                elif item_chance < 90:
+                    item_component: Item = Item(use_function=cast_confuse, targeting=True, targeting_message=Message("Left-click an enemy to confuse it, or right-click to cancel.", Colors.LIGHT_CYAN))
+                    item: Entity = Entity(position=point, char="#", color=Colors.LIGHT_PINK, name="Confusion Scroll", render_order=RenderOrder.ITEM, item=item_component)
                 else:
                     item_component: Item = Item(use_function=cast_lightning, damage=20, maximum_range=5)
                     item: Entity = Entity(position=point, char="#", color=Colors.YELLOW, name="Lightning Scroll", render_order=RenderOrder.ITEM, item=item_component)

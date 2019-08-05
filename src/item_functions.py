@@ -80,7 +80,7 @@ def cast_fireball(*args, **kwargs) -> List[dict]:
     return results
 
 
-def cast_confusion(*args, **kwargs) -> List[dict]:
+def cast_confuse(*args, **kwargs) -> List[dict]:
     entities: Optional[List[Entity]] = kwargs.get("entities")
     fov_map: Optional[tcod.map.Map] = kwargs.get("fov_map")
     target_position: Optional[Point] = kwargs.get("target_position")

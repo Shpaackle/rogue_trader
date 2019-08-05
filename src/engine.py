@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import List, Optional, TYPE_CHECKING
 
 from bearlibterminal import terminal as blt
 
@@ -20,16 +20,19 @@ from map_objects import Point
 from rect import Rect
 from render_functions import render_all, RenderOrder
 
+if TYPE_CHECKING:
+    import tcod.map
+
 
 def main():
     screen_width: int = 120 * 2
     screen_height: int = 45 * 2
     window_title: str = "Rogue Trader"
 
-    map_font = "map font: mplus-1p-bold.ttf, size=12, spacing=2x2"
-    ui_font = "ui_font font: mplus-1p-bold.ttf, size=10"
-    bar_font = "bar font: mplus-1p-bold.ttf, size=6, spacing=2x2"
-    hover_font = "hover font: mplus-1p-bold.ttf, size=6"
+    map_font: str = "map font: mplus-1p-bold.ttf, size=12, spacing=2x2"
+    ui_font: str = "ui_font font: mplus-1p-bold.ttf, size=10"
+    bar_font: str = "bar font: mplus-1p-bold.ttf, size=6, spacing=2x2"
+    hover_font: str = "hover font: mplus-1p-bold.ttf, size=6"
 
     map_width: int = 80
     map_height: int = 80
@@ -38,12 +41,12 @@ def main():
 
     bar_width: int = 20
     panel_height: int = 12
-    panel_y = screen_height - (panel_height * 2)
+    panel_y: int = screen_height - (panel_height * 2)
     ui_panel: Rect = Rect(position=Point(x=0, y=panel_y), width=screen_width, height=panel_height*2)
 
-    message_x = (bar_width + 2) * 2
-    message_width = screen_width - ((bar_width - 2) * 2)
-    message_height = (panel_height - 1)
+    message_x: int = (bar_width + 2) * 2
+    message_width: int = screen_width - ((bar_width - 2) * 2)
+    message_height: int = (panel_height - 1)
 
     room_min_size: int = 10
     room_max_size: int = 6
@@ -90,13 +93,13 @@ def main():
 
     # fov_update: bool = True
 
-    fov_map = initialize_fov(game_map)
+    fov_map: tcod.map.Map = initialize_fov(game_map)
 
-    message_log = MessageLog(message_x, message_width, message_height)
+    message_log: MessageLog = MessageLog(message_x, message_width, message_height)
 
-    player.position = map_generator.player_start_point
+    player.position: Point = map_generator.player_start_point
 
-    camera = Camera(player=player, width=camera_width, height=camera_height)
+    camera: Camera = Camera(player=player, width=camera_width, height=camera_height)
     blt.open()
     blt.composition(True)
     blt.set(f"window: size={screen_width}x{screen_height}, title={window_title}, cellsize=8x8")
@@ -106,15 +109,12 @@ def main():
     blt.set(f"{bar_font}")
     blt.set(f"{hover_font}")
 
-    game_state = GameStates.PLAYER_TURN
-    previous_game_state = game_state
+    game_state: GameStates = GameStates.PLAYER_TURN
+    previous_game_state: GameStates = game_state
 
-    targeting_item = None
+    targeting_item: Optional[Entity] = None
 
-    mouse_position = Point(x=blt.state(blt.TK_MOUSE_X)//2, y=blt.state(blt.TK_MOUSE_Y)//2)
-
-    left_click = None
-    right_click = None
+    mouse_position: Point = Point(x=blt.state(blt.TK_MOUSE_X)//2, y=blt.state(blt.TK_MOUSE_Y)//2)
 
     while game_running:
         if camera.fov_update:
@@ -133,10 +133,6 @@ def main():
             mouse_position=mouse_position,
             game_state=game_state
         )
-
-        blt.printf(camera.width + 2, 2, f"left_click = {left_click}")
-        blt.printf(camera_width + 1, 4, f"right_click = {right_click}")
-        blt.refresh()
 
         camera.fov_update = False
 
@@ -182,10 +178,8 @@ def main():
             if game_state == GameStates.TARGETING:
                 if left_click:
                     target_position: Point = camera.map_point(left_click)
-                    blt.printf(camera.width + 2, 2, f"target_position={left_click}")
 
                     item_use_results = player.inventory.use(targeting_item, entities=entities, fov_map=fov_map, target_position=target_position)
-                    print(item_use_results)
                     player_turn_results.extend(item_use_results)
                 elif right_click:
                     player_turn_results.append({"targeting_cancelled": True})
