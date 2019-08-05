@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Dict
+
 from bearlibterminal import terminal as blt
 
 from game_states import GameStates
@@ -9,6 +13,8 @@ def handle_keys(key: int, game_state: GameStates) -> dict:
         return handle_player_turn_keys(key=key)
     elif game_state == GameStates.PLAYER_DEAD:
         return handle_player_dead_keys(key=key)
+    elif game_state == GameStates.TARGETING:
+        return handle_targeting_keys(key=key)
     elif game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
         return handle_inventory_keys(key=key)
 
@@ -48,6 +54,13 @@ def handle_player_turn_keys(key: int) -> dict:
     return {}
 
 
+def handle_targeting_keys(key: int) -> dict:
+    if key == blt.TK_ESCAPE:
+        return {"exit": True}
+
+    return {}
+
+
 def handle_player_dead_keys(key: int) -> dict:
     if key == blt.TK_I:
         return {"show_inventory": True}
@@ -65,5 +78,14 @@ def handle_inventory_keys(key: int) -> dict:
     index = key - blt.TK_A
     if index >= 0:
         return {"inventory_index": index}
+
+    return {}
+
+
+def handle_mouse(key: int, mouse_position: Point) -> Dict[str, Point]:
+    if key == blt.TK_MOUSE_LEFT:
+        return {"left_click": mouse_position}
+    elif key == blt.TK_MOUSE_RIGHT:
+        return {"right_click": mouse_position}
 
     return {}

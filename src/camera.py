@@ -67,6 +67,9 @@ class Camera(Rect):
     def fov_update(self, value: bool):
         self._fov_update = value
 
+    def map_point(self, point: Point) -> Point:
+        return self.top_left + point
+
     @property
     def camera_view(self):
         view_point = namedtuple("view_point", ["x", "y", "map_point"])

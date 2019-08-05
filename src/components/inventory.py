@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING, Dict
+from typing import List, TYPE_CHECKING
 
 from colors import Colors
 from components.entity_component import EntityComponent
@@ -16,9 +16,9 @@ class Inventory(EntityComponent):
     def __init__(self, capacity: int):
         super(Inventory, self).__init__()
         self.capacity: int = capacity
-        self.items: List[Item] = []
+        self.items: List[Entity] = []
 
-    def add_item(self, item: Item) -> List[Dict]:
+    def add_item(self, item: Entity) -> List[dict]:
         results = []
 
         if len(self.items) >= self.capacity:
@@ -29,7 +29,7 @@ class Inventory(EntityComponent):
         else:
             results.append({
                 "item_added": item,
-                "message": Message(f"You pick up the {item.name}!", Colors.BLUE)
+                "message": Message(f"You pick up the {item.name}!", Colors.CYAN)
             })
 
             self.items.append(item)
@@ -44,17 +44,17 @@ class Inventory(EntityComponent):
         if item_component.use_function is None:
             results.append({"message": Message(f"The {item_entity.name}", Colors.YELLOW)})
         else:
-            kwargs = {**item_component.function_kwargs, **kwargs}
-            item_use_results = item_component.use_function(self.owner, **kwargs)
+            if item_component.targeting and not (kwargs.get("target_position")):
+                results.append({"targeting": item_entity})
+            else:
+                kwargs = {**item_component.function_kwargs, **kwargs}
+                item_use_results = item_component.use_function(self.owner, **kwargs)
 
-            print(f"{item_use_results}")
+                for item_use_result in item_use_results:
+                    if item_use_result.get("consumed"):
+                        self.remove_item(item_entity)
 
-            for item_use_result in item_use_results:
-                if item_use_result.get("consumed"):
-                    print("item_removed")
-                    self.remove_item(item_entity)
-
-            results.extend(item_use_results)
+                results.extend(item_use_results)
 
         return results
 

@@ -13,7 +13,7 @@ from entity import Entity, get_blocking_entities_at_location
 from fov_functions import initialize_fov, recompute_fov
 from game_messages import Message, MessageLog
 from game_states import GameStates
-from input_handlers import handle_keys
+from input_handlers import handle_keys, handle_mouse
 from map_objects.game_map import GameMap
 from map_objects.map_generator import MapGenerator
 from map_objects import Point
@@ -108,7 +108,13 @@ def main():
 
     game_state = GameStates.PLAYER_TURN
     previous_game_state = game_state
+
+    targeting_item = None
+
     mouse_position = Point(x=blt.state(blt.TK_MOUSE_X)//2, y=blt.state(blt.TK_MOUSE_Y)//2)
+
+    left_click = None
+    right_click = None
 
     while game_running:
         if camera.fov_update:
@@ -128,6 +134,10 @@ def main():
             game_state=game_state
         )
 
+        blt.printf(camera.width + 2, 2, f"left_click = {left_click}")
+        blt.printf(camera_width + 1, 4, f"right_click = {right_click}")
+        blt.refresh()
+
         camera.fov_update = False
 
         # blt.refresh()
@@ -139,13 +149,17 @@ def main():
             camera.fov_update = True
 
             action: dict = handle_keys(terminal_input, game_state)
+            mouse_action: dict = handle_mouse(terminal_input, mouse_position)
 
             movement: Optional[Point] = action.get("move", None)
             pickup: bool = action.get("pickup", False)
             show_inventory: bool = action.get("show_inventory", False)
             drop_inventory: bool = action.get("drop_inventory", False)
             inventory_index: Optional[int] = action.get("inventory_index", None)
-            exit_game: bool = action.get("exit", False)
+            exit_action: bool = action.get("exit", False)
+
+            left_click = mouse_action.get("left_click")
+            right_click = mouse_action.get("right_click")
 
             player_turn_results = []
 
@@ -161,13 +175,27 @@ def main():
                 item = player.inventory.items[inventory_index]
 
                 if game_state == GameStates.SHOW_INVENTORY:
-                    player_turn_results.extend(player.inventory.use(item))
+                    player_turn_results.extend(player.inventory.use(item, entities=entities, fov_map=fov_map))
                 elif game_state == GameStates.DROP_INVENTORY:
                     player_turn_results.extend(player.inventory.drop_item(item))
 
-            if exit_game:
+            if game_state == GameStates.TARGETING:
+                if left_click:
+                    target_position: Point = camera.map_point(left_click)
+                    blt.printf(camera.width + 2, 2, f"target_position={left_click}")
+
+                    item_use_results = player.inventory.use(targeting_item, entities=entities, fov_map=fov_map, target_position=target_position)
+                    print(item_use_results)
+                    player_turn_results.extend(item_use_results)
+                elif right_click:
+                    player_turn_results.append({"targeting_cancelled": True})
+
+            if exit_action:
                 if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
-                    game_state = previous_game_state
+                    game_state = GameStates.PLAYER_TURN
+                elif game_state == GameStates.TARGETING:
+                    player_turn_results.append({"targeting_cancelled": True})
+
                 else:
                     game_running = False
 
@@ -207,9 +235,16 @@ def main():
                 item_added = player_turn_result.get("item_added")
                 item_consumed = player_turn_result.get("consumed")
                 item_dropped = player_turn_result.get("item_dropped")
+                targeting = player_turn_result.get("targeting")
+                targeting_cancelled: bool = player_turn_result.get("targeting_cancelled", False)
 
                 if message:
                     message_log.add_message(message)
+
+                if targeting_cancelled:
+                    game_state = previous_game_state
+
+                    message_log.add_message(Message("Targeting cancelled"))
 
                 if dead_entity:
                     if dead_entity == player:
@@ -229,6 +264,14 @@ def main():
                 if item_consumed:
                     game_state = GameStates.ENEMY_TURN
                     camera.fov_update = True
+
+                if targeting:
+                    previous_game_state = game_state
+                    game_state = GameStates.TARGETING
+
+                    targeting_item: Entity = targeting
+
+                    message_log.add_message(targeting_item.item.targeting_message)
 
                 if item_dropped:
                     entities.append(item_dropped)

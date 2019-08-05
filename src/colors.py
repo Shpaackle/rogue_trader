@@ -3,8 +3,6 @@ from __future__ import annotations
 from collections import namedtuple
 from enum import Enum
 
-from bearlibterminal import terminal as blt
-
 
 COLOR = namedtuple("Color", ["r", "g", "b", "a"])
 
@@ -26,6 +24,8 @@ class Colors(Enum):
     VIOLET = COLOR(r=127, g=0, b=255, a=0)
     YELLOW = COLOR(r=255, g=255, b=0, a=0)
     GREEN = COLOR(r=0, g=255, b=0, a=0)
+    CYAN = COLOR(r=0, g=255, b=255, a=0)
+    LIGHT_CYAN = COLOR(r=115, g=255, b=255, a=0)
 
     @property
     def red(self):

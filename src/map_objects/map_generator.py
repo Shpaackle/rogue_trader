@@ -10,7 +10,8 @@ from colors import Colors
 from components import BasicMonster, Fighter
 from components.item import Item
 from entity import Entity
-from item_functions import heal
+from game_messages import Message
+from item_functions import cast_confusion, cast_fireball, cast_lightning, heal
 from map_objects.point import Point
 from map_objects.game_map import GameMap
 from map_objects.tile import Tile
@@ -161,7 +162,7 @@ class MapGenerator:
                     continue
                 if self.game_map.count_one_step_neighbors(point) == 1:
                     cave.append(point)
-                    self.game_map.place_tile(point=point, tile=Tile.empty(point=point))
+                    self.game_map.place_tile(point=point, tile=Tile.floor(point=point))
         return cave
 
     def find_tile(self, point: Point) -> Tile:
@@ -178,7 +179,7 @@ class MapGenerator:
         self, entities: List[Entity], min_monsters: int, max_monsters: int, max_items: int
     ):
         number_of_monsters: int = random.randint(min_monsters, max_monsters)
-        number_of_items: int = random.randint(10, max_items)
+        number_of_items: int = random.randint(30, max_items)
 
         for i in range(number_of_monsters):
             point: Point = random.choice(self.cave)
@@ -217,7 +218,16 @@ class MapGenerator:
             point: Point = random.choice(self.cave)
 
             if not any([entity for entity in entities if entity.position == point]):
-                item_component = Item(use_function=heal, amount=4)
-                item = Entity(position=point, char="!", color=Colors.VIOLET, name="Healing Potion", render_order=RenderOrder.ITEM, item=item_component)
+                item_chance: int = random.randint(0, 100)
+
+                if item_chance < 70:
+                    item_component: Item = Item(use_function=heal, amount=4)
+                    item: Entity = Entity(position=point, char="!", color=Colors.VIOLET, name="Healing Potion", render_order=RenderOrder.ITEM, item=item_component)
+                elif item_chance < 85:
+                    item_component: Item = Item(use_function=cast_fireball, targeting=True, targeting_message=Message("Left-click a target tile for the fireball, or right-click to cancel.", Colors.LIGHT_CYAN), damage=12, radius=3)
+                    item = Entity(position=point, char="#", color=Colors.RED, name="Fireball Scroll", render_order=RenderOrder.ITEM, item=item_component)
+                else:
+                    item_component: Item = Item(use_function=cast_lightning, damage=20, maximum_range=5)
+                    item: Entity = Entity(position=point, char="#", color=Colors.YELLOW, name="Lightning Scroll", render_order=RenderOrder.ITEM, item=item_component)
 
                 entities.append(item)

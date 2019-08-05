@@ -6,7 +6,6 @@ from colors import Colors
 from game_messages import Message
 from render_functions import RenderOrder
 
-
 if TYPE_CHECKING:
     from entity import Entity
 

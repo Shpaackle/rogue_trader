@@ -43,7 +43,7 @@ def get_names_under_mouse(mouse_position: Point, entities: List[Entity], fov_map
     if not (0 <= mouse_position.x < camera.width - 1 and 0 <= mouse_position.y < camera.height):
         return ""
 
-    map_point = camera.top_left + mouse_position
+    map_point = camera.map_point(mouse_position)
     # blt.printf((camera.width + 1) * 2, 2, f"Map Point = {map_point}")
 
     names = [entity.name for entity in entities if entity.position == map_point and fov_map.fov[entity.x, entity.y]]
@@ -126,10 +126,10 @@ def render_all(
     for i, message in enumerate(message_log.messages, 0):
         blt.printf(x=message_log.x, y=ui_panel.y + (i * 2), s=f"[TK_ALIGN_LEFT][color={blt.color_from_argb(*message.color.argb)}]{message.text}")
 
-    blt.printf(camera.width * 2 + 2, 4, f"Mouse position: {mouse_position}")
-    map_point = Point(x=abs(mouse_position.x - camera.center.x), y=abs(mouse_position.y - camera.center.y))
-    blt.printf(camera.width * 2 + 2, 6, f"Map point: {map_point}")
-    blt.printf((camera.width + 1) * 2, 8, f"Player position: {player.position}")
+    # blt.printf(camera.width * 2 + 2, 4, f"Mouse position: {mouse_position}")
+    # map_point = Point(x=abs(mouse_position.x - camera.center.x), y=abs(mouse_position.y - camera.center.y))
+    # blt.printf(camera.width * 2 + 2, 6, f"Map point: {map_point}")
+    # blt.printf((camera.width + 1) * 2, 8, f"Player position: {player.position}")
 
     if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
         if game_state == GameStates.SHOW_INVENTORY:
