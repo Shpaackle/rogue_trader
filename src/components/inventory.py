@@ -9,6 +9,7 @@ from game_messages import Message
 if TYPE_CHECKING:
     from components.item import Item
     from entity import Entity
+    from map_objects import Point
 
 
 class Inventory(EntityComponent):
@@ -59,3 +60,13 @@ class Inventory(EntityComponent):
 
     def remove_item(self, item):
         self.items.remove(item)
+
+    def drop_item(self, item: Entity) -> List[dict]:
+        results = []
+
+        item.position: Point = self.owner.position
+
+        self.remove_item(item)
+        results.append({"item_dropped": item, "message": Message(f"You dropped the {item.name}", Colors.YELLOW)})
+
+        return results

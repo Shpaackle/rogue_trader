@@ -9,7 +9,7 @@ def handle_keys(key: int, game_state: GameStates) -> dict:
         return handle_player_turn_keys(key=key)
     elif game_state == GameStates.PLAYER_DEAD:
         return handle_player_dead_keys(key=key)
-    elif game_state == GameStates.SHOW_INVENTORY:
+    elif game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
         return handle_inventory_keys(key=key)
 
     return {}
@@ -32,10 +32,15 @@ def handle_player_turn_keys(key: int) -> dict:
         return {"move": Point(-1, 1)}
     elif key == blt.TK_N:
         return {"move": Point(1, 1)}
+
     elif key == blt.TK_G:
         return {"pickup": True}
+
     elif key == blt.TK_I:
         return {"show_inventory": True}
+
+    elif key == blt.TK_D:
+        return {"drop_inventory": True}
 
     if key == blt.TK_ESCAPE or key == blt.TK_Q or key == blt.TK_CLOSE:
         return {"exit": True}

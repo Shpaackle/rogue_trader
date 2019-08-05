@@ -143,6 +143,7 @@ def main():
             movement: Optional[Point] = action.get("move", None)
             pickup: bool = action.get("pickup", False)
             show_inventory: bool = action.get("show_inventory", False)
+            drop_inventory: bool = action.get("drop_inventory", False)
             inventory_index: Optional[int] = action.get("inventory_index", None)
             exit_game: bool = action.get("exit", False)
 
@@ -152,12 +153,20 @@ def main():
                 previous_game_state = game_state
                 game_state = GameStates.SHOW_INVENTORY
 
+            if drop_inventory:
+                previous_game_state = game_state
+                game_state = GameStates.DROP_INVENTORY
+
             if inventory_index is not None and previous_game_state != GameStates.PLAYER_DEAD and inventory_index < len(player.inventory.items):
                 item = player.inventory.items[inventory_index]
-                player_turn_results.extend(player.inventory.use(item))
+
+                if game_state == GameStates.SHOW_INVENTORY:
+                    player_turn_results.extend(player.inventory.use(item))
+                elif game_state == GameStates.DROP_INVENTORY:
+                    player_turn_results.extend(player.inventory.drop_item(item))
 
             if exit_game:
-                if game_state == GameStates.SHOW_INVENTORY:
+                if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
                     game_state = previous_game_state
                 else:
                     game_running = False
@@ -197,6 +206,7 @@ def main():
                 dead_entity = player_turn_result.get("dead")
                 item_added = player_turn_result.get("item_added")
                 item_consumed = player_turn_result.get("consumed")
+                item_dropped = player_turn_result.get("item_dropped")
 
                 if message:
                     message_log.add_message(message)
@@ -219,6 +229,11 @@ def main():
                 if item_consumed:
                     game_state = GameStates.ENEMY_TURN
                     camera.fov_update = True
+
+                if item_dropped:
+                    entities.append(item_dropped)
+
+                    game_state = GameStates.ENEMY_TURN
 
             if game_state == GameStates.ENEMY_TURN:
                 for entity in entities[1:]:

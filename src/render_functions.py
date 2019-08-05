@@ -131,7 +131,11 @@ def render_all(
     blt.printf(camera.width * 2 + 2, 6, f"Map point: {map_point}")
     blt.printf((camera.width + 1) * 2, 8, f"Player position: {player.position}")
 
-    if game_state == GameStates.SHOW_INVENTORY:
-        inventory_menu(camera=camera, header="Press the key next to an item to use it, or Esc to cancel. \n", inventory=player.inventory, inventory_width=50)
+    if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
+        if game_state == GameStates.SHOW_INVENTORY:
+            inventory_title = "Press the key next to an item to use it, or Esc to cancel. \n"
+        else:
+            inventory_title = "Press the key next to an item to drop it, or Esc to cancel. \n"
+        inventory_menu(camera=camera, header=inventory_title, inventory=player.inventory, inventory_width=50)
 
     blt.refresh()
