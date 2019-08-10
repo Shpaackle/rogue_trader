@@ -32,13 +32,17 @@ class Camera(Rect):
         self.center = player.position
         self.player: Entity = player
         self._fov_update: bool = True
-        self.ui_panel: Panel = Panel(position=Point(0, 0), width=width, height=height-5)
+        self.ui_panel: Panel = Panel(
+            position=Point(0, 0), width=width, height=height - 5
+        )
 
     def __iter__(self) -> Iterator["camera_view"]:
         camera_view = namedtuple("camera_view", ["x", "y", "map_point"])
         for i in range(self.height):
             for j in range(self.width):
-                view = camera_view(x=j, y=i, map_point=Point(x=self.x + j, y=self.y + i))
+                view = camera_view(
+                    x=j, y=i, map_point=Point(x=self.x + j, y=self.y + i)
+                )
                 yield view
 
     @property
@@ -52,7 +56,11 @@ class Camera(Rect):
 
     @property
     def map_points(self) -> Set[Point]:
-        return {Point(x=j, y=i) for i in range(self.top, self.bottom + 1) for j in range(self.left, self.right + 1)}
+        return {
+            Point(x=j, y=i)
+            for i in range(self.top, self.bottom + 1)
+            for j in range(self.left, self.right + 1)
+        }
 
     def recenter(self) -> None:
         """ Centers camera on point provided"""
@@ -77,7 +85,9 @@ class Camera(Rect):
             for col, j in enumerate(range(self.left, self.right)):
                 yield view_point(x=col, y=row, map_point=Point(x=j, y=i))
 
-    def render_view(self, game_map: GameMap, fov_map: tcod.map.Map, entities: List[Entity]):
+    def render_view(
+        self, game_map: GameMap, fov_map: tcod.map.Map, entities: List[Entity]
+    ):
         for view in self.camera_view:
             tile: Tile = game_map.get_tile(point=view.map_point, fov_map=fov_map)
 
@@ -97,15 +107,12 @@ class Camera(Rect):
         camera = cls(
             player=player,
             width=json_data["camera"]["width"],
-            height=json_data["camera"]["height"]
+            height=json_data["camera"]["height"],
         )
 
         return camera
 
     def to_json(self) -> dict:
-        json_data = {
-            "width": self.width,
-            "height": self.height
-        }
+        json_data = {"width": self.width, "height": self.height}
 
         return json_data

@@ -64,7 +64,7 @@ class Game:
             "game_map": game_map_json_data,
             "message_log": message_log_json_data,
             "game_state": game_state_json_data,
-            "camera": camera_json_data
+            "camera": camera_json_data,
         }
 
         with open("save_game.json", "w") as save_file:
@@ -78,7 +78,10 @@ class Game:
         with open("save_game.json") as save_file:
             json_data = json.load(save_file)
 
-        entities = [Entity.from_json(json_data=entity_json_data) for entity_json_data in json_data["entities"]]
+        entities = [
+            Entity.from_json(json_data=entity_json_data)
+            for entity_json_data in json_data["entities"]
+        ]
         player = entities[json_data["player_index"]]
 
         game_map = GameMap.from_json(json_data=json_data["game_map"])
@@ -86,7 +89,9 @@ class Game:
         game_state = GameStates(json_data["game_state"])
 
         game = cls()
-        game.map_generator: Optional[MapGenerator] = MapGenerator(map_width=CONSTANTS.map_width, map_height=CONSTANTS.map_height)
+        game.map_generator: Optional[MapGenerator] = MapGenerator(
+            map_width=CONSTANTS.map_width, map_height=CONSTANTS.map_height
+        )
         game.entities = entities
         game.player = player
 
@@ -101,17 +106,36 @@ class Game:
     @classmethod
     def new_game(cls) -> Game:
         game = cls()
-        game.map_generator: Optional[MapGenerator] = MapGenerator(map_width=CONSTANTS.map_width, map_height=CONSTANTS.map_height)
+        game.map_generator: Optional[MapGenerator] = MapGenerator(
+            map_width=CONSTANTS.map_width, map_height=CONSTANTS.map_height
+        )
         game.current_state: Optional[GameStates] = GameStates.PLAYER_TURN
         game.previous_state: Optional[GameStates] = GameStates.PLAYER_TURN
 
-        fighter_component:Fighter = Fighter(hp=CONSTANTS.player_hp, defense=CONSTANTS.player_defense, power=CONSTANTS.player_power)
+        fighter_component: Fighter = Fighter(
+            hp=CONSTANTS.player_hp,
+            defense=CONSTANTS.player_defense,
+            power=CONSTANTS.player_power,
+        )
         inventory_component: Inventory = Inventory(capacity=26)
-        player: Optional[Entity] = Entity(position=Point(0, 0), char="@", color=Colors.WHITE, name="Player", blocks=True, render_order=RenderOrder.ACTOR, fighter=fighter_component, inventory=inventory_component)
+        player: Optional[Entity] = Entity(
+            position=Point(0, 0),
+            char="@",
+            color=Colors.WHITE,
+            name="Player",
+            blocks=True,
+            render_order=RenderOrder.ACTOR,
+            fighter=fighter_component,
+            inventory=inventory_component,
+        )
         game.player: Optional[Entity] = player
         game.entities: Optional[List[Entity]] = [player]
 
-        game.message_log: Optional[MessageLog] = MessageLog(x=CONSTANTS.message_x, width=CONSTANTS.message_width, height=CONSTANTS.message_height)
+        game.message_log: Optional[MessageLog] = MessageLog(
+            x=CONSTANTS.message_x,
+            width=CONSTANTS.message_width,
+            height=CONSTANTS.message_height,
+        )
         game.game_running: bool = True
         game.camera: Optional[Camera] = Camera(player=game.player)
 

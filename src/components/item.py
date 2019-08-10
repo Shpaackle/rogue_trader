@@ -11,7 +11,13 @@ if TYPE_CHECKING:
 
 
 class Item(EntityComponent):
-    def __init__(self, use_function=None, targeting: bool = False, targeting_message: Optional[Message] = None, **kwargs):
+    def __init__(
+        self,
+        use_function=None,
+        targeting: bool = False,
+        targeting_message: Optional[Message] = None,
+        **kwargs
+    ):
         self.use_function = use_function
         self.targeting: bool = targeting
         self.targeting_message: Optional[Message] = targeting_message
@@ -45,14 +51,17 @@ class Item(EntityComponent):
 
     def to_json(self) -> dict:
         if self.targeting_message:
-            targeting_message = (self.targeting_message.text, self.targeting_message.color.name)
+            targeting_message = (
+                self.targeting_message.text,
+                self.targeting_message.color.name,
+            )
         else:
             targeting_message = None
         json_data = {
             "use_function_name": self.use_function.__name__,
             "targeting": self.targeting,
             "targeting_message": targeting_message,
-            "function_kwargs": self.function_kwargs
+            "function_kwargs": self.function_kwargs,
         }
 
         return json_data

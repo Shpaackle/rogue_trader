@@ -56,12 +56,15 @@ class MapGenerator:
         entities: List[Entity],
         min_monsters: int,
         max_monsters: int,
-        max_items: int
+        max_items: int,
     ):
         self.generate_caves(width=width, height=height)
 
         self.place_entities(
-            entities=entities, min_monsters=min_monsters, max_monsters=max_monsters, max_items=max_items
+            entities=entities,
+            min_monsters=min_monsters,
+            max_monsters=max_monsters,
+            max_items=max_items,
         )
 
     def generate_caves(self, width: int, height: int):
@@ -176,7 +179,11 @@ class MapGenerator:
         return tile
 
     def place_entities(
-        self, entities: List[Entity], min_monsters: int, max_monsters: int, max_items: int
+        self,
+        entities: List[Entity],
+        min_monsters: int,
+        max_monsters: int,
+        max_items: int,
     ):
         number_of_monsters: int = random.randint(min_monsters, max_monsters)
         number_of_items: int = random.randint(30, max_items)
@@ -222,15 +229,61 @@ class MapGenerator:
 
                 if item_chance < 70:
                     item_component: Item = Item(use_function=heal, amount=4)
-                    item: Entity = Entity(position=point, char="!", color=Colors.VIOLET, name="Healing Potion", render_order=RenderOrder.ITEM, item=item_component)
+                    item: Entity = Entity(
+                        position=point,
+                        char="!",
+                        color=Colors.VIOLET,
+                        name="Healing Potion",
+                        render_order=RenderOrder.ITEM,
+                        item=item_component,
+                    )
                 elif item_chance < 80:
-                    item_component: Item = Item(use_function=cast_fireball, targeting=True, targeting_message=Message("Left-click a target tile for the fireball, or right-click to cancel.", Colors.LIGHT_CYAN), damage=12, radius=3)
-                    item = Entity(position=point, char="#", color=Colors.RED, name="Fireball Scroll", render_order=RenderOrder.ITEM, item=item_component)
+                    item_component: Item = Item(
+                        use_function=cast_fireball,
+                        targeting=True,
+                        targeting_message=Message(
+                            "Left-click a target tile for the fireball, or right-click to cancel.",
+                            Colors.LIGHT_CYAN,
+                        ),
+                        damage=12,
+                        radius=3,
+                    )
+                    item = Entity(
+                        position=point,
+                        char="#",
+                        color=Colors.RED,
+                        name="Fireball Scroll",
+                        render_order=RenderOrder.ITEM,
+                        item=item_component,
+                    )
                 elif item_chance < 90:
-                    item_component: Item = Item(use_function=cast_confuse, targeting=True, targeting_message=Message("Left-click an enemy to confuse it, or right-click to cancel.", Colors.LIGHT_CYAN))
-                    item: Entity = Entity(position=point, char="#", color=Colors.LIGHT_PINK, name="Confusion Scroll", render_order=RenderOrder.ITEM, item=item_component)
+                    item_component: Item = Item(
+                        use_function=cast_confuse,
+                        targeting=True,
+                        targeting_message=Message(
+                            "Left-click an enemy to confuse it, or right-click to cancel.",
+                            Colors.LIGHT_CYAN,
+                        ),
+                    )
+                    item: Entity = Entity(
+                        position=point,
+                        char="#",
+                        color=Colors.LIGHT_PINK,
+                        name="Confusion Scroll",
+                        render_order=RenderOrder.ITEM,
+                        item=item_component,
+                    )
                 else:
-                    item_component: Item = Item(use_function=cast_lightning, damage=20, maximum_range=5)
-                    item: Entity = Entity(position=point, char="#", color=Colors.YELLOW, name="Lightning Scroll", render_order=RenderOrder.ITEM, item=item_component)
+                    item_component: Item = Item(
+                        use_function=cast_lightning, damage=20, maximum_range=5
+                    )
+                    item: Entity = Entity(
+                        position=point,
+                        char="#",
+                        color=Colors.YELLOW,
+                        name="Lightning Scroll",
+                        render_order=RenderOrder.ITEM,
+                        item=item_component,
+                    )
 
                 entities.append(item)

@@ -36,6 +36,7 @@ def test_count_neighbors():
 
     pass
 
+
 # game_map.explore(point)
 # game_map.tiles
 # game_map.is_blocked(point)

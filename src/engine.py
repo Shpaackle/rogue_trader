@@ -28,16 +28,26 @@ def play_game(game: Game):
     game.game_state: GameStates = GameStates.PLAYER_TURN
     game.previous_state: GameStates = game.game_state
 
-    game.camera: Camera = Camera(player=game.player, width=CONSTANTS.camera_width, height=CONSTANTS.camera_height)
+    game.camera: Camera = Camera(
+        player=game.player, width=CONSTANTS.camera_width, height=CONSTANTS.camera_height
+    )
     game.camera.fov_update: bool = True
 
     targeting_item: Optional[Entity] = None
 
-    mouse_position: Point = Point(x=blt.state(blt.TK_MOUSE_X)//2, y=blt.state(blt.TK_MOUSE_Y)//2)
+    mouse_position: Point = Point(
+        x=blt.state(blt.TK_MOUSE_X) // 2, y=blt.state(blt.TK_MOUSE_Y) // 2
+    )
 
     while game.game_running:
         if game.camera.fov_update:
-            recompute_fov(fov_map=game.fov_map, point=game.player.position, radius=CONSTANTS.fov_radius, light_walls=CONSTANTS.fov_light_walls, algorithm=CONSTANTS.fov_algorithm)
+            recompute_fov(
+                fov_map=game.fov_map,
+                point=game.player.position,
+                radius=CONSTANTS.fov_radius,
+                light_walls=CONSTANTS.fov_light_walls,
+                algorithm=CONSTANTS.fov_algorithm,
+            )
 
         render_all(
             entities=game.entities,
@@ -49,7 +59,7 @@ def play_game(game: Game):
             ui_panel=CONSTANTS.ui_panel,
             bar_width=CONSTANTS.bar_width,
             mouse_position=mouse_position,
-            game_state=game.game_state
+            game_state=game.game_state,
         )
 
         game.camera.fov_update = False
@@ -76,7 +86,9 @@ def play_game(game: Game):
                 destination = game.player.position + movement
 
                 if not game.game_map.is_blocked(destination):
-                    target = get_blocking_entities_at_location(entities=game.entities, destination=destination)
+                    target = get_blocking_entities_at_location(
+                        entities=game.entities, destination=destination
+                    )
 
                     if target:
                         attack_results = game.player.fighter.attack(target=target)
@@ -94,7 +106,9 @@ def play_game(game: Game):
 
                         break
                 else:
-                    game.message_log.add_message(Message("There is nothing here to pick up."))
+                    game.message_log.add_message(
+                        Message("There is nothing here to pick up.")
+                    )
 
             if show_inventory:
                 game.change_state(GameStates.SHOW_INVENTORY)
@@ -102,11 +116,19 @@ def play_game(game: Game):
             if drop_inventory:
                 game.change_state(GameStates.DROP_INVENTORY)
 
-            if inventory_index is not None and game.previous_state != GameStates.PLAYER_DEAD and inventory_index < len(game.player.inventory.items):
+            if (
+                inventory_index is not None
+                and game.previous_state != GameStates.PLAYER_DEAD
+                and inventory_index < len(game.player.inventory.items)
+            ):
                 item = game.player.inventory.items[inventory_index]
 
                 if game.game_state == GameStates.SHOW_INVENTORY:
-                    player_turn_results.extend(game.player.inventory.use(item, entities=game.entities, fov_map=game.fov_map))
+                    player_turn_results.extend(
+                        game.player.inventory.use(
+                            item, entities=game.entities, fov_map=game.fov_map
+                        )
+                    )
                 elif game.game_state == GameStates.DROP_INVENTORY:
                     player_turn_results.extend(game.player.inventory.drop_item(item))
 
@@ -114,13 +136,21 @@ def play_game(game: Game):
                 if left_click:
                     target_position: Point = game.camera.map_point(left_click)
 
-                    item_use_results = game.player.inventory.use(targeting_item, entities=game.entities, fov_map=game.fov_map, target_position=target_position)
+                    item_use_results = game.player.inventory.use(
+                        targeting_item,
+                        entities=game.entities,
+                        fov_map=game.fov_map,
+                        target_position=target_position,
+                    )
                     player_turn_results.extend(item_use_results)
                 elif right_click:
                     player_turn_results.append({"targeting_cancelled": True})
 
             if exit_action:
-                if game.game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
+                if game.game_state in (
+                    GameStates.SHOW_INVENTORY,
+                    GameStates.DROP_INVENTORY,
+                ):
                     game.change_state(GameStates.PLAYER_TURN)
                 elif game.game_state == GameStates.TARGETING:
                     player_turn_results.append({"targeting_cancelled": True})
@@ -135,7 +165,9 @@ def play_game(game: Game):
                 item_consumed: Optional[Entity] = player_turn_result.get("consumed")
                 item_dropped: Optional[Entity] = player_turn_result.get("item_dropped")
                 targeting: Optional[Entity] = player_turn_result.get("targeting")
-                targeting_cancelled: bool = player_turn_result.get("targeting_cancelled", False)
+                targeting_cancelled: bool = player_turn_result.get(
+                    "targeting_cancelled", False
+                )
 
                 if message:
                     game.message_log.add_message(message)
@@ -182,11 +214,13 @@ def play_game(game: Game):
                             target=game.player,
                             fov_map=game.fov_map,
                             game_map=game.game_map,
-                            entities=game.entities
+                            entities=game.entities,
                         )
 
                         for enemy_turn_result in enemy_turn_results:
-                            message: Optional[Message] = enemy_turn_result.get("message")
+                            message: Optional[Message] = enemy_turn_result.get(
+                                "message"
+                            )
                             dead_entity = enemy_turn_result.get("dead")
 
                             if message:
@@ -214,7 +248,9 @@ def main():
 
     blt.open()
     blt.composition(True)
-    blt.set(f"window: size={CONSTANTS.screen_width}x{CONSTANTS.screen_height}, title={CONSTANTS.window_title}, cellsize=8x8")
+    blt.set(
+        f"window: size={CONSTANTS.screen_width}x{CONSTANTS.screen_height}, title={CONSTANTS.window_title}, cellsize=8x8"
+    )
     blt.set("input: filter={keyboard, mouse+}")
     blt.set(f"{CONSTANTS.map_font}")
     blt.set(f"{CONSTANTS.ui_font}")
@@ -227,7 +263,12 @@ def main():
             blt.clear()
 
             if show_load_error_message:
-                message_box(header="No save game to load", width=50, screen_width=CONSTANTS.screen_width, screen_height=CONSTANTS.screen_height)
+                message_box(
+                    header="No save game to load",
+                    width=50,
+                    screen_width=CONSTANTS.screen_width,
+                    screen_height=CONSTANTS.screen_height,
+                )
 
             main_menu(CONSTANTS.camera_width)
             blt.refresh()
@@ -242,7 +283,9 @@ def main():
                 load_saved_game: bool = action.get("load_game", False)
                 exit_game: bool = action.get("exit_game", False)
 
-                if show_load_error_message and (new_game or load_saved_game or exit_game):
+                if show_load_error_message and (
+                    new_game or load_saved_game or exit_game
+                ):
                     show_load_error_message = False
                 elif new_game:
                     game = game.new_game()
@@ -252,7 +295,7 @@ def main():
                         entities=game.entities,
                         min_monsters=CONSTANTS.min_monsters,
                         max_monsters=CONSTANTS.max_monsters,
-                        max_items=CONSTANTS.max_items
+                        max_items=CONSTANTS.max_items,
                     )
                     game.game_state = GameStates.PLAYER_TURN
                     game.player.position = game.map_generator.player_start_point
@@ -280,7 +323,7 @@ def main_():
         entities=game.entities,
         min_monsters=CONSTANTS.min_monsters,
         max_monsters=CONSTANTS.max_monsters,
-        max_items=CONSTANTS.max_items
+        max_items=CONSTANTS.max_items,
     )
     # map_generator.generate_caves(width=map_width, height=map_height)
 
@@ -294,10 +337,14 @@ def main_():
 
     game.player.position: Point = game.map_generator.player_start_point
 
-    game.camera: Camera = Camera(player=game.player, width=CONSTANTS.camera_width, height=CONSTANTS.camera_height)
+    game.camera: Camera = Camera(
+        player=game.player, width=CONSTANTS.camera_width, height=CONSTANTS.camera_height
+    )
     blt.open()
     blt.composition(True)
-    blt.set(f"window: size={CONSTANTS.screen_width}x{CONSTANTS.screen_height}, title={CONSTANTS.window_title}, cellsize=8x8")
+    blt.set(
+        f"window: size={CONSTANTS.screen_width}x{CONSTANTS.screen_height}, title={CONSTANTS.window_title}, cellsize=8x8"
+    )
     blt.set("input: filter={keyboard, mouse+}")
     blt.set(f"{CONSTANTS.map_font}")
     blt.set(f"{CONSTANTS.ui_font}")
@@ -309,13 +356,19 @@ def main_():
 
     targeting_item: Optional[Entity] = None
 
-    mouse_position: Point = Point(x=blt.state(blt.TK_MOUSE_X)//2, y=blt.state(blt.TK_MOUSE_Y)//2)
+    mouse_position: Point = Point(
+        x=blt.state(blt.TK_MOUSE_X) // 2, y=blt.state(blt.TK_MOUSE_Y) // 2
+    )
 
     while game.game_running:
 
         if game.camera.fov_update:
             recompute_fov(
-                game.fov_map, game.player.position, CONSTANTS.fov_radius, CONSTANTS.fov_light_walls, CONSTANTS.fov_algorithm
+                game.fov_map,
+                game.player.position,
+                CONSTANTS.fov_radius,
+                CONSTANTS.fov_light_walls,
+                CONSTANTS.fov_algorithm,
             )
         render_all(
             entities=game.entities,
@@ -327,7 +380,7 @@ def main_():
             ui_panel=CONSTANTS.ui_panel,
             bar_width=CONSTANTS.bar_width,
             mouse_position=mouse_position,
-            game_state=game.game_state
+            game_state=game.game_state,
         )
 
         game.camera.fov_update = False
@@ -337,7 +390,9 @@ def main_():
         if blt.has_input():
             terminal_input: int = blt.read()
 
-            mouse_position = Point(x=blt.state(blt.TK_MOUSE_X) // 2, y=blt.state(blt.TK_MOUSE_Y) // 2)
+            mouse_position = Point(
+                x=blt.state(blt.TK_MOUSE_X) // 2, y=blt.state(blt.TK_MOUSE_Y) // 2
+            )
             game.camera.fov_update = True
 
             action: dict = handle_keys(terminal_input, game.game_state)
@@ -361,11 +416,19 @@ def main_():
             if drop_inventory:
                 game.change_state(GameStates.DROP_INVENTORY)
 
-            if inventory_index is not None and game.previous_game_state != GameStates.PLAYER_DEAD and inventory_index < len(game.player.inventory.items):
+            if (
+                inventory_index is not None
+                and game.previous_game_state != GameStates.PLAYER_DEAD
+                and inventory_index < len(game.player.inventory.items)
+            ):
                 item = game.player.inventory.items[inventory_index]
 
                 if game.game_state == GameStates.SHOW_INVENTORY:
-                    player_turn_results.extend(game.player.inventory.use(item, entities=game.entities, fov_map=game.fov_map))
+                    player_turn_results.extend(
+                        game.player.inventory.use(
+                            item, entities=game.entities, fov_map=game.fov_map
+                        )
+                    )
                 elif game.game_state == GameStates.DROP_INVENTORY:
                     player_turn_results.extend(game.player.inventory.drop_item(item))
 
@@ -373,13 +436,21 @@ def main_():
                 if left_click:
                     target_position: Point = game.camera.map_point(left_click)
 
-                    item_use_results = game.player.inventory.use(targeting_item, entities=game.entities, fov_map=game.fov_map, target_position=target_position)
+                    item_use_results = game.player.inventory.use(
+                        targeting_item,
+                        entities=game.entities,
+                        fov_map=game.fov_map,
+                        target_position=target_position,
+                    )
                     player_turn_results.extend(item_use_results)
                 elif right_click:
                     player_turn_results.append({"targeting_cancelled": True})
 
             if exit_action:
-                if game.game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
+                if game.game_state in (
+                    GameStates.SHOW_INVENTORY,
+                    GameStates.DROP_INVENTORY,
+                ):
                     game.game_state = GameStates.PLAYER_TURN
                 elif game.game_state == GameStates.TARGETING:
                     player_turn_results.append({"targeting_cancelled": True})
@@ -415,7 +486,9 @@ def main_():
 
                         break
                 else:
-                    game.message_log.add_message(Message("There is nothing here to pick up."))
+                    game.message_log.add_message(
+                        Message("There is nothing here to pick up.")
+                    )
 
             for player_turn_result in player_turn_results:
                 message: Optional[Message] = player_turn_result.get("message")
@@ -424,7 +497,9 @@ def main_():
                 item_consumed: Optional[Entity] = player_turn_result.get("consumed")
                 item_dropped: Optional[Entity] = player_turn_result.get("item_dropped")
                 targeting: Optional[Entity] = player_turn_result.get("targeting")
-                targeting_cancelled: bool = player_turn_result.get("targeting_cancelled", False)
+                targeting_cancelled: bool = player_turn_result.get(
+                    "targeting_cancelled", False
+                )
 
                 if message:
                     game.message_log.add_message(message)

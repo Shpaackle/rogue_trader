@@ -49,9 +49,7 @@ class BasicMonster(AI):
         return results
 
     def to_json(self) -> dict:
-        json_data = {
-            "name": self.__class__.__name__
-        }
+        json_data = {"name": self.__class__.__name__}
 
         return json_data
 
@@ -74,7 +72,7 @@ class ConfusedMonster(AI):
         target: Entity,
         fov_map: tcod.map.Map,
         game_map: GameMap,
-        entities: List[Entity]
+        entities: List[Entity],
     ):
         results = []
 
@@ -83,12 +81,22 @@ class ConfusedMonster(AI):
             random_y = self.owner.y + random.randint(0, 2) - 1
 
             if random_x != self.owner.x and random_y != self.owner.y:
-                self.owner.move_towards(target_position=Point(random_x, random_y), game_map=game_map, entities=entities)
+                self.owner.move_towards(
+                    target_position=Point(random_x, random_y),
+                    game_map=game_map,
+                    entities=entities,
+                )
 
             self.number_of_turns -= 1
         else:
             self.owner.ai = self.previous_ai
-            results.append({"message": Message(f"The {self.owner.name} is no longer confused!", Colors.RED)})
+            results.append(
+                {
+                    "message": Message(
+                        f"The {self.owner.name} is no longer confused!", Colors.RED
+                    )
+                }
+            )
 
         return results
 
@@ -97,8 +105,8 @@ class ConfusedMonster(AI):
             "name": self.__class__.__name__,
             "ai_data": {
                 "previous_ai": self.previous_ai.__class__.__name__,
-                "number_of_turns": self.number_of_turns
-            }
+                "number_of_turns": self.number_of_turns,
+            },
         }
 
         return json_data

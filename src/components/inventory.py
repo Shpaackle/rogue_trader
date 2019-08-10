@@ -29,15 +29,22 @@ class Inventory(EntityComponent):
         results = []
 
         if len(self.items) >= self.capacity:
-            results.append({
-                "item_added": None,
-                "message": Message("You cannot carry any more, your inventory is full", Colors.YELLOW)
-            })
+            results.append(
+                {
+                    "item_added": None,
+                    "message": Message(
+                        "You cannot carry any more, your inventory is full",
+                        Colors.YELLOW,
+                    ),
+                }
+            )
         else:
-            results.append({
-                "item_added": item,
-                "message": Message(f"You pick up the {item.name}!", Colors.CYAN)
-            })
+            results.append(
+                {
+                    "item_added": item,
+                    "message": Message(f"You pick up the {item.name}!", Colors.CYAN),
+                }
+            )
 
             self.items.append(item)
 
@@ -49,7 +56,9 @@ class Inventory(EntityComponent):
         item_component: Item = item_entity.item
 
         if item_component.use_function is None:
-            results.append({"message": Message(f"The {item_entity.name}", Colors.YELLOW)})
+            results.append(
+                {"message": Message(f"The {item_entity.name}", Colors.YELLOW)}
+            )
         else:
             if item_component.targeting and not (kwargs.get("target_position")):
                 results.append({"targeting": item_entity})
@@ -74,14 +83,19 @@ class Inventory(EntityComponent):
         item.position: Point = self.owner.position
 
         self.remove_item(item)
-        results.append({"item_dropped": item, "message": Message(f"You dropped the {item.name}", Colors.YELLOW)})
+        results.append(
+            {
+                "item_dropped": item,
+                "message": Message(f"You dropped the {item.name}", Colors.YELLOW),
+            }
+        )
 
         return results
 
     def to_json(self) -> dict:
         json_data = {
             "capacity": self.capacity,
-            "items": [item.to_json() for item in self.items]
+            "items": [item.to_json() for item in self.items],
         }
 
         return json_data
@@ -90,7 +104,10 @@ class Inventory(EntityComponent):
     def from_json(cls, json_data) -> Inventory:
         from entity import Entity
 
-        items = [Entity.from_json(item_json_data) for item_json_data in json_data.get("items", [])]
+        items = [
+            Entity.from_json(item_json_data)
+            for item_json_data in json_data.get("items", [])
+        ]
 
         inventory = cls(capacity=json_data.get("capacity"), items=items)
 

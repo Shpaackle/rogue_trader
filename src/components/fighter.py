@@ -71,7 +71,7 @@ class Fighter(EntityComponent):
             "max_hp": self.max_hp,
             "hp": self.hp,
             "defense": self.defense,
-            "power": self.power
+            "power": self.power,
         }
 
         return json_data
@@ -82,7 +82,7 @@ class Fighter(EntityComponent):
             hp=json_data.get("hp"),
             defense=json_data.get("defense"),
             power=json_data.get("power"),
-            max_hp=json_data.get("max_hp")
+            max_hp=json_data.get("max_hp"),
         )
 
         return fighter

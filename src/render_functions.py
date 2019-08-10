@@ -39,14 +39,23 @@ class RenderOrder(Enum):
     ACTOR = auto()
 
 
-def get_names_under_mouse(mouse_position: Point, entities: List[Entity], fov_map: tcod.map.Map, camera: Camera) -> str:
-    if not (0 <= mouse_position.x < camera.width - 1 and 0 <= mouse_position.y < camera.height):
+def get_names_under_mouse(
+    mouse_position: Point, entities: List[Entity], fov_map: tcod.map.Map, camera: Camera
+) -> str:
+    if not (
+        0 <= mouse_position.x < camera.width - 1
+        and 0 <= mouse_position.y < camera.height
+    ):
         return ""
 
     map_point = camera.map_point(mouse_position)
     # blt.printf((camera.width + 1) * 2, 2, f"Map Point = {map_point}")
 
-    names = [entity.name for entity in entities if entity.position == map_point and fov_map.fov[entity.x, entity.y]]
+    names = [
+        entity.name
+        for entity in entities
+        if entity.position == map_point and fov_map.fov[entity.x, entity.y]
+    ]
     names = ", ".join(names)
 
     return names.capitalize()
@@ -67,17 +76,16 @@ def render_bar(
     blt.composition = True
     bk_color = blt.color_from_argb(*back_color.argb)
     bar_color = blt.color_from_argb(*bar_color.argb)
-    bar_text = format(f"[font=bar_font][spacing=2x2]{name}: {value:02}/{maximum:02}[/font]", f"^{total_width}")
+    bar_text = format(
+        f"[font=bar_font][spacing=2x2]{name}: {value:02}/{maximum:02}[/font]",
+        f"^{total_width}",
+    )
 
     bar = " " * total_width
     blt.printf(x, y, s=f"[font=bar][bkcolor={bk_color}]{bar}")
     blt.printf(x, y, s=f"[font=bar][bkcolor={bar_color}]{bar[:bar_width]}")
 
-    blt.printf(
-        x=int(x + total_width / 2),
-        y=y,
-        s=bar_text,
-    )
+    blt.printf(x=int(x + total_width / 2), y=y, s=bar_text)
 
 
 def render_all(
@@ -90,7 +98,7 @@ def render_all(
     ui_panel: Rect,
     bar_width: int,
     mouse_position: Point,
-    game_state: GameStates
+    game_state: GameStates,
 ):
 
     # Draw the map
@@ -117,12 +125,18 @@ def render_all(
         back_color=Colors.DARK_RED,
     )
 
-    names = get_names_under_mouse(mouse_position=mouse_position, entities=entities, fov_map=fov_map, camera=camera)
+    names = get_names_under_mouse(
+        mouse_position=mouse_position, entities=entities, fov_map=fov_map, camera=camera
+    )
     color = blt.color_from_argb(*Colors.LIGHT_GRAY.argb)
     blt.printf(ui_panel.x, ui_panel.y + 2, s=f"[color={color}]{names}")
 
     for i, message in enumerate(message_log.messages, 0):
-        blt.printf(x=message_log.x, y=ui_panel.y + (i * 2), s=f"[TK_ALIGN_LEFT][color={blt.color_from_argb(*message.color.argb)}]{message.text}")
+        blt.printf(
+            x=message_log.x,
+            y=ui_panel.y + (i * 2),
+            s=f"[TK_ALIGN_LEFT][color={blt.color_from_argb(*message.color.argb)}]{message.text}",
+        )
 
     # blt.printf(camera.width * 2 + 2, 4, f"Mouse position: {mouse_position}")
     # map_point = Point(x=abs(mouse_position.x - camera.center.x), y=abs(mouse_position.y - camera.center.y))
@@ -133,9 +147,18 @@ def render_all(
 
     if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
         if game_state == GameStates.SHOW_INVENTORY:
-            inventory_title = "Press the key next to an item to use it, or Esc to cancel. \n"
+            inventory_title = (
+                "Press the key next to an item to use it, or Esc to cancel. \n"
+            )
         else:
-            inventory_title = "Press the key next to an item to drop it, or Esc to cancel. \n"
-        inventory_menu(camera=camera, header=inventory_title, inventory=player.inventory, inventory_width=50)
+            inventory_title = (
+                "Press the key next to an item to drop it, or Esc to cancel. \n"
+            )
+        inventory_menu(
+            camera=camera,
+            header=inventory_title,
+            inventory=player.inventory,
+            inventory_width=50,
+        )
 
     blt.refresh()

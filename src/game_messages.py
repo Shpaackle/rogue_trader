@@ -53,7 +53,7 @@ class MessageLog:
             "messages": messages,
             "x": self.x,
             "width": self.width,
-            "height": self.height
+            "height": self.height,
         }
 
         return json_data
@@ -73,5 +73,3 @@ class MessageLog:
             message_log.add_message(message)
 
         return message_log
-
-

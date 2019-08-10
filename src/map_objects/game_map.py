@@ -152,7 +152,7 @@ class GameMap(tcod.map.Map):
                     blt.printf(
                         x=col * 2,
                         y=row * 2,
-                        s=f"[font=map][color={tile.color}]{tile.char}[/color][/font]"
+                        s=f"[font=map][color={tile.color}]{tile.char}[/color][/font]",
                     )
 
     def to_json(self) -> dict:
@@ -160,7 +160,7 @@ class GameMap(tcod.map.Map):
             "width": self.width,
             "height": self.height,
             "explored": self._explored.tolist(),
-            "tile_map": self.tile_map.tolist()
+            "tile_map": self.tile_map.tolist(),
         }
 
         return json_data

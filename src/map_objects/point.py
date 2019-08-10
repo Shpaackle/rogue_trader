@@ -7,7 +7,7 @@ from enum import Enum
 from typing import Generator, Iterator
 
 
-POINT = namedtuple("POINT", ["x", "y"],)
+POINT = namedtuple("POINT", ["x", "y"])
 
 
 class Direction(Enum):
@@ -32,6 +32,7 @@ class Point:
     Args:
         x- and y-coordinate for the point
     """
+
     x: int
     y: int
 
@@ -95,7 +96,16 @@ class Point:
 
     @property
     def all_neighbors(self) -> Generator[Point]:
-        for direction in [self.N, self.NE, self.E, self.SE, self.S, self.SW, self.W, self.NW]:
+        for direction in [
+            self.N,
+            self.NE,
+            self.E,
+            self.SE,
+            self.S,
+            self.SW,
+            self.W,
+            self.NW,
+        ]:
             yield direction
 
     @property

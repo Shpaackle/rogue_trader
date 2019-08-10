@@ -83,7 +83,9 @@ def handle_inventory_keys(key: int) -> dict:
 
 
 def handle_mouse(key: int) -> Dict[str, Point]:
-    mouse_position: Point = Point(x=blt.state(blt.TK_MOUSE_X) // 2, y=blt.state(blt.TK_MOUSE_Y) // 2)
+    mouse_position: Point = Point(
+        x=blt.state(blt.TK_MOUSE_X) // 2, y=blt.state(blt.TK_MOUSE_Y) // 2
+    )
 
     if key == blt.TK_MOUSE_LEFT:
         return {"left_click": mouse_position}
