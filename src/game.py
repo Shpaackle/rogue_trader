@@ -1,28 +1,35 @@
 from __future__ import annotations
 
+import json
+import os
 from typing import List, Optional, TYPE_CHECKING
 
+from camera import Camera
+from colors import Colors
+from components import Fighter, Inventory
 from constants import CONSTANTS
+from entity import Entity
 from game_messages import MessageLog
 from game_states import GameStates
-from map_objects import MapGenerator
+from map_objects import GameMap, MapGenerator, Point
+from render_functions import RenderOrder
 
 if TYPE_CHECKING:
     import tcod.map
 
-    from camera import Camera
-    from entity import Entity
+    # from camera import Camera
+    # from entity import Entity
     from map_objects import GameMap
 
 
 class Game:
     def __init__(self):
-        self.map_generator: MapGenerator = MapGenerator(map_width=CONSTANTS.map_width, map_height=CONSTANTS.map_height)
-        self.current_state: GameStates = GameStates.PLAYER_TURN
-        self.previous_state: GameStates = GameStates.PLAYER_TURN
-        self.player: Entity = CONSTANTS.create_player()
-        self.entities: List[Entity] = [self.player]
-        self.message_log: MessageLog = MessageLog(x=CONSTANTS.message_x, width=CONSTANTS.message_width, height=CONSTANTS.message_height)
+        self.map_generator: Optional[MapGenerator] = None
+        self.current_state: Optional[GameStates] = None
+        self.previous_state: Optional[GameStates] = None
+        self.player: Optional[Entity] = None
+        self.entities: Optional[List[Entity]] = None
+        self.message_log: Optional[MessageLog] = None
         self.fov_map: Optional[tcod.map.Map] = None
         self.game_running: bool = True
         self.camera: Optional[Camera] = None
@@ -36,9 +43,76 @@ class Game:
         self.current_state = next_state
 
     @property
-    def game_state(self):
+    def game_state(self) -> GameStates:
         return self.current_state
 
     @game_state.setter
-    def game_state(self, value):
-        self.current_state = value
+    def game_state(self, new_state: GameStates):
+        self.current_state = new_state
+
+    def save_game(self):
+        player_index = self.entities.index(self.player)
+        entities_json_data = [entity.to_json() for entity in self.entities]
+        game_map_json_data = self.game_map.to_json()
+        message_log_json_data = self.message_log.to_json()
+        game_state_json_data = self.game_state.value
+        camera_json_data = self.camera.to_json()
+
+        json_data = {
+            "player_index": player_index,
+            "entities": entities_json_data,
+            "game_map": game_map_json_data,
+            "message_log": message_log_json_data,
+            "game_state": game_state_json_data,
+            "camera": camera_json_data
+        }
+
+        with open("save_game.json", "w") as save_file:
+            json.dump(json_data, save_file, indent=4)
+
+    @classmethod
+    def load_game(cls):
+        if not os.path.isfile("save_game.json"):
+            raise FileNotFoundError
+
+        with open("save_game.json") as save_file:
+            json_data = json.load(save_file)
+
+        entities = [Entity.from_json(json_data=entity_json_data) for entity_json_data in json_data["entities"]]
+        player = entities[json_data["player_index"]]
+
+        game_map = GameMap.from_json(json_data=json_data["game_map"])
+        message_log = MessageLog.from_json(json_data=json_data["message_log"])
+        game_state = GameStates(json_data["game_state"])
+
+        game = cls()
+        game.map_generator: Optional[MapGenerator] = MapGenerator(map_width=CONSTANTS.map_width, map_height=CONSTANTS.map_height)
+        game.entities = entities
+        game.player = player
+
+        game.map_generator.game_map = game_map
+        game.message_log = message_log
+        game.current_state = game_state
+
+        game.camera: Camera = Camera.from_json(json_data=json_data, player=player)
+
+        return game
+
+    @classmethod
+    def new_game(cls) -> Game:
+        game = cls()
+        game.map_generator: Optional[MapGenerator] = MapGenerator(map_width=CONSTANTS.map_width, map_height=CONSTANTS.map_height)
+        game.current_state: Optional[GameStates] = GameStates.PLAYER_TURN
+        game.previous_state: Optional[GameStates] = GameStates.PLAYER_TURN
+
+        fighter_component:Fighter = Fighter(hp=CONSTANTS.player_hp, defense=CONSTANTS.player_defense, power=CONSTANTS.player_power)
+        inventory_component: Inventory = Inventory(capacity=26)
+        player: Optional[Entity] = Entity(position=Point(0, 0), char="@", color=Colors.WHITE, name="Player", blocks=True, render_order=RenderOrder.ACTOR, fighter=fighter_component, inventory=inventory_component)
+        game.player: Optional[Entity] = player
+        game.entities: Optional[List[Entity]] = [player]
+
+        game.message_log: Optional[MessageLog] = MessageLog(x=CONSTANTS.message_x, width=CONSTANTS.message_width, height=CONSTANTS.message_height)
+        game.game_running: bool = True
+        game.camera: Optional[Camera] = Camera(player=game.player)
+
+        return game

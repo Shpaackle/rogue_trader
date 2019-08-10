@@ -6,6 +6,7 @@ from typing import List, TYPE_CHECKING
 import tcod
 from bearlibterminal import terminal as blt
 
+from constants import CONSTANTS
 from map_objects.point import Point
 from rect import Rect
 
@@ -32,14 +33,16 @@ class Menu(Rect):
         return self.y + len(self.header) + 1
 
 
-def menu(camera: Camera, header: str, options: List[str], width: int):
+def menu(camera_width: int, header: str, options: List[str], width: int, panel_y: int = None):
     if len(options) > 26:
         raise ValueError("Cannot have a menu with more than 26 options.")
 
     # Calculate total height for the header (after auto-wrap) and one line per option
     wrapped_header = textwrap.wrap(text=header, width=width * 2)
     height = len(options) + len(wrapped_header)
-    panel = Menu(position=Point(x=2, y=2), width=camera.width * 2, height=height, header=wrapped_header, options=options)
+    if panel_y is None:
+        panel_y = 2
+    panel = Menu(position=Point(x=2, y=panel_y), width=camera_width * 2, height=height, header=wrapped_header, options=options)
 
     for i, text_line in enumerate(panel.header):
         blt.printf(x=panel.x, y=panel.y + i * 2, s=f"{text_line}")
@@ -57,4 +60,16 @@ def inventory_menu(camera: Camera, header: str, inventory: Inventory, inventory_
     else:
         options = [item.name for item in inventory.items]
 
-    menu(camera=camera, header=header, options=options, width=inventory_width)
+    menu(camera_width=camera.width, header=header, options=options, width=inventory_width)
+
+
+def main_menu(camera_width: int):
+    options = ["Play a new game", "Continue last game", "Quit"]
+
+    header = CONSTANTS.window_title + "\n" + "By Shpaackle"
+
+    menu(camera_width=camera_width, header=header, options=options, width=CONSTANTS.screen_width)
+
+
+def message_box(header: str, width: int, screen_width: int, screen_height: int):
+    menu(camera_width=width, header=header, options=[], width=screen_width, panel_y=10)

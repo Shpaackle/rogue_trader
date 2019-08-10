@@ -64,12 +64,10 @@ def render_bar(
 ):
     bar_width = int(float(value) / maximum * total_width)
 
-    if bar_width <= 0:
-        return
-
     blt.composition = True
     bk_color = blt.color_from_argb(*back_color.argb)
     bar_color = blt.color_from_argb(*bar_color.argb)
+    bar_text = format(f"[font=bar_font][spacing=2x2]{name}: {value:02}/{maximum:02}[/font]", f"^{total_width}")
 
     bar = " " * total_width
     blt.printf(x, y, s=f"[font=bar][bkcolor={bk_color}]{bar}")
@@ -78,7 +76,7 @@ def render_bar(
     blt.printf(
         x=int(x + total_width / 2),
         y=y,
-        s=f"[font=bar_font][spacing=2x2]{name}: {value:02}/{maximum:02}[/font]",
+        s=bar_text,
     )
 
 
@@ -94,30 +92,30 @@ def render_all(
     mouse_position: Point,
     game_state: GameStates
 ):
-    if camera.fov_update:
-        # Draw the map
-        blt.clear()
-        # blt.clear_area(x=0, y=0, w=camera.width, h=camera.height)
-        game_map.render(fov_map=fov_map, camera=camera)
 
-        # Draw all entities in the list
-        entities_in_render_order = sorted(entities, key=lambda x: x.render_order.value)
-        for entity in entities_in_render_order:
-            if camera.in_bounds(entity.position):
-                if fov_map.fov[entity.x, entity.y]:
-                    point = entity.position - camera.top_left
-                    entity.draw(point)
+    # Draw the map
+    blt.clear()
+    # blt.clear_area(x=0, y=0, w=camera.width, h=camera.height)
+    game_map.render(fov_map=fov_map, camera=camera)
 
-        render_bar(
-            x=ui_panel.x,
-            y=ui_panel.y,
-            total_width=bar_width,
-            name="HP",
-            value=player.fighter.hp,
-            maximum=player.fighter.max_hp,
-            bar_color=Colors.RED,
-            back_color=Colors.DARK_RED,
-        )
+    # Draw all entities in the list
+    # entities_in_render_order = sorted(entities, key=lambda x: x.render_order.value)
+    for entity in entities:
+        if camera.in_bounds(entity.position):
+            if fov_map.fov[entity.x, entity.y]:
+                point = entity.position - camera.top_left
+                entity.draw(point)
+
+    render_bar(
+        x=ui_panel.x,
+        y=ui_panel.y,
+        total_width=bar_width,
+        name="HP",
+        value=player.fighter.hp,
+        maximum=player.fighter.max_hp,
+        bar_color=Colors.RED,
+        back_color=Colors.DARK_RED,
+    )
 
     names = get_names_under_mouse(mouse_position=mouse_position, entities=entities, fov_map=fov_map, camera=camera)
     color = blt.color_from_argb(*Colors.LIGHT_GRAY.argb)
@@ -130,6 +128,8 @@ def render_all(
     # map_point = Point(x=abs(mouse_position.x - camera.center.x), y=abs(mouse_position.y - camera.center.y))
     # blt.printf(camera.width * 2 + 2, 6, f"Map point: {map_point}")
     # blt.printf((camera.width + 1) * 2, 8, f"Player position: {player.position}")
+
+    # blt.printf(ui_panel.x + 1, ui_panel.y + 6, "This is a test!", blt.TK_ALIGN_CENTER)
 
     if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
         if game_state == GameStates.SHOW_INVENTORY:

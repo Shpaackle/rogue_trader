@@ -20,10 +20,20 @@ def heal(*args, **kwargs) -> List[dict]:
     results: List[dict] = []
 
     if entity.fighter.hp == entity.fighter.max_hp:
-        results.append({"consumed": False, "message": Message("You are already at full health", Colors.YELLOW)})
+        results.append(
+            {
+                "consumed": False,
+                "message": Message("You are already at full health", Colors.YELLOW),
+            }
+        )
     else:
         entity.fighter.heal(amount)
-        results.append({"consumed": True, "message": Message("Your wounds start to feel better!", Colors.GREEN)})
+        results.append(
+            {
+                "consumed": True,
+                "message": Message("Your wounds start to feel better!", Colors.GREEN),
+            }
+        )
 
     return results
 
@@ -42,17 +52,31 @@ def cast_lightning(*args, **kwargs) -> List[dict]:
 
     for entity in entities:
         if entity.fighter and entity != caster and fov_map.fov[entity.x, entity.y]:
-            distance: float = caster.position.distance_to(entity.position)
+            distance: float = caster.distance_to(entity.position)
 
             if distance < closest_distance:
                 target: Entity = entity
                 closest_distance = distance
 
     if target:
-        results.append({"consumed": True, "target": target, "message": Message(f"A lightning bolt strikes the {target.name} with a loud thunder! The damage is {damage}")})
+        results.append(
+            {
+                "consumed": True,
+                "target": target,
+                "message": Message(
+                    f"A lightning bolt strikes the {target.name} with a loud thunder! The damage is {damage}"
+                ),
+            }
+        )
         results.extend(target.fighter.take_damage(damage))
     else:
-        results.append({"consumed": False, "target": None, "message": Message("No enemy is close enough to strike.", Colors.RED)})
+        results.append(
+            {
+                "consumed": False,
+                "target": None,
+                "message": Message("No enemy is close enough to strike.", Colors.RED),
+            }
+        )
 
     return results
 
@@ -67,14 +91,36 @@ def cast_fireball(*args, **kwargs) -> List[dict]:
     results = []
 
     if not fov_map.fov[target_position.x, target_position.y]:
-        results.append({"consumed": False, "message": Message("You cannot target a tile outside of your field of view.", Colors.YELLOW)})
+        results.append(
+            {
+                "consumed": False,
+                "message": Message(
+                    "You cannot target a tile outside of your field of view.",
+                    Colors.YELLOW,
+                ),
+            }
+        )
         return results
 
-    results.append({"consumed": True, "message": Message(f"The fireball explodes, burning everything within {radius} tiles!", Colors.ORANGE)})
+    results.append(
+        {
+            "consumed": True,
+            "message": Message(
+                f"The fireball explodes, burning everything within {radius} tiles!",
+                Colors.ORANGE,
+            ),
+        }
+    )
 
     for entity in entities:
-        if entity.position.distance_to(target_position) <= radius and entity.fighter:
-            results.append({"message": Message(f"The {entity.name} gets burned for {damage} hit points.")})
+        if entity.distance_to(target_position) <= radius and entity.fighter:
+            results.append(
+                {
+                    "message": Message(
+                        f"The {entity.name} gets burned for {damage} hit points."
+                    )
+                }
+            )
             results.extend(entity.fighter.take_damage(damage))
 
     return results
@@ -88,7 +134,15 @@ def cast_confuse(*args, **kwargs) -> List[dict]:
     results = []
 
     if not fov_map.fov[target_position.x, target_position.y]:
-        results.append({"consumed": False, "message": Message("You cannot target a tile outside your field of view.", Colors.YELLOW)})
+        results.append(
+            {
+                "consumed": False,
+                "message": Message(
+                    "You cannot target a tile outside your field of view.",
+                    Colors.YELLOW,
+                ),
+            }
+        )
         return results
 
     for entity in entities:
@@ -98,11 +152,26 @@ def cast_confuse(*args, **kwargs) -> List[dict]:
             confused_ai.owner = entity
             entity.ai = confused_ai
 
-            results.append({"consumed": True, "message": Message(f"The eyes of the {entity.name} look vacant, as he starts to stumble around!", Colors.LIGHT_GREEN)})
+            results.append(
+                {
+                    "consumed": True,
+                    "message": Message(
+                        f"The eyes of the {entity.name} look vacant, as they start to stumble around!",
+                        Colors.LIGHT_GREEN,
+                    ),
+                }
+            )
 
             break
 
     else:
-        results.append({"consumed": False, "message": Message(f"There is no targetable enemy a that location.", Colors.YELLOW)})
+        results.append(
+            {
+                "consumed": False,
+                "message": Message(
+                    f"There is no enemy to target at that location.", Colors.YELLOW
+                ),
+            }
+        )
 
     return results

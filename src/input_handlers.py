@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict
+from typing import Dict, Optional
 
 from bearlibterminal import terminal as blt
 
@@ -48,7 +48,7 @@ def handle_player_turn_keys(key: int) -> dict:
     elif key == blt.TK_D:
         return {"drop_inventory": True}
 
-    if key == blt.TK_ESCAPE or key == blt.TK_Q or key == blt.TK_CLOSE:
+    if key in {blt.TK_ESCAPE, blt.TK_Q, blt.TK_CLOSE}:
         return {"exit": True}
 
     return {}
@@ -82,10 +82,26 @@ def handle_inventory_keys(key: int) -> dict:
     return {}
 
 
-def handle_mouse(key: int, mouse_position: Point) -> Dict[str, Point]:
+def handle_mouse(key: int) -> Dict[str, Point]:
+    mouse_position: Point = Point(x=blt.state(blt.TK_MOUSE_X) // 2, y=blt.state(blt.TK_MOUSE_Y) // 2)
+
     if key == blt.TK_MOUSE_LEFT:
         return {"left_click": mouse_position}
     elif key == blt.TK_MOUSE_RIGHT:
         return {"right_click": mouse_position}
+
+    return {}
+
+
+def handle_main_menu(key: int) -> Optional[Dict[str, bool]]:
+    if key == blt.TK_A:
+        print("returned new_game")
+        return {"new_game": True}
+    elif key == blt.TK_B:
+        print("returned load_game")
+        return {"load_game": True}
+    elif key in {blt.TK_C, blt.TK_ESCAPE, blt.TK_CLOSE}:
+        print("returned exit_game")
+        return {"exit_game": True}
 
     return {}

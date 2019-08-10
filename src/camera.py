@@ -91,3 +91,21 @@ class Camera(Rect):
                 if fov_map.fov[entity.x, entity.y]:
                     point = entity.position - self.top_left
                     entity.draw(point)
+
+    @classmethod
+    def from_json(cls, json_data: dict, player: Entity):
+        camera = cls(
+            player=player,
+            width=json_data["camera"]["width"],
+            height=json_data["camera"]["height"]
+        )
+
+        return camera
+
+    def to_json(self) -> dict:
+        json_data = {
+            "width": self.width,
+            "height": self.height
+        }
+
+        return json_data

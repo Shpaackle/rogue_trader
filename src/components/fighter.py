@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import List, TYPE_CHECKING
 
 from colors import Colors
 from components.entity_component import EntityComponent
@@ -11,15 +11,19 @@ if TYPE_CHECKING:
 
 
 class Fighter(EntityComponent):
-    def __init__(self, hp: int, defense: int, power: int):
+    def __init__(self, hp: int, defense: int, power: int, max_hp: int = None):
         super(Fighter, self).__init__()
-        self.max_hp = hp
-        self.hp = hp
-        self.defense = defense
-        self.power = power
+        self.hp: int = hp
+        self.defense: int = defense
+        self.power: int = power
+
+        if max_hp is None:
+            self.max_hp: int = hp
+        else:
+            self.max_hp: int = max_hp
 
     def take_damage(self, amount: int):
-        results = []
+        results: List[dict] = []
 
         self.hp -= amount
 
@@ -29,9 +33,9 @@ class Fighter(EntityComponent):
         return results
 
     def attack(self, target: Entity):
-        results = []
+        results: List[dict] = []
 
-        damage = self.power - target.fighter.defense
+        damage: int = self.power - target.fighter.defense
 
         if damage > 0:
             # target.fighter.take_damage(amount=damage)
@@ -61,3 +65,24 @@ class Fighter(EntityComponent):
 
         if self.hp > self.max_hp:
             self.hp = self.max_hp
+
+    def to_json(self):
+        json_data = {
+            "max_hp": self.max_hp,
+            "hp": self.hp,
+            "defense": self.defense,
+            "power": self.power
+        }
+
+        return json_data
+
+    @classmethod
+    def from_json(cls, json_data) -> Fighter:
+        fighter: Fighter = cls(
+            hp=json_data.get("hp"),
+            defense=json_data.get("defense"),
+            power=json_data.get("power"),
+            max_hp=json_data.get("max_hp")
+        )
+
+        return fighter

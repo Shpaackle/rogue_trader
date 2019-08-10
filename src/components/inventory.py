@@ -13,10 +13,17 @@ if TYPE_CHECKING:
 
 
 class Inventory(EntityComponent):
-    def __init__(self, capacity: int):
+    def __init__(self, capacity: int = None, items: List[Entity] = None):
         super(Inventory, self).__init__()
+
+        if capacity is None:
+            capacity = 26
         self.capacity: int = capacity
-        self.items: List[Entity] = []
+
+        if items is None:
+            self.items: List[Entity] = []
+        else:
+            self.items: List[Entity] = []
 
     def add_item(self, item: Entity) -> List[dict]:
         results = []
@@ -70,3 +77,21 @@ class Inventory(EntityComponent):
         results.append({"item_dropped": item, "message": Message(f"You dropped the {item.name}", Colors.YELLOW)})
 
         return results
+
+    def to_json(self) -> dict:
+        json_data = {
+            "capacity": self.capacity,
+            "items": [item.to_json() for item in self.items]
+        }
+
+        return json_data
+
+    @classmethod
+    def from_json(cls, json_data) -> Inventory:
+        from entity import Entity
+
+        items = [Entity.from_json(item_json_data) for item_json_data in json_data.get("items", [])]
+
+        inventory = cls(capacity=json_data.get("capacity"), items=items)
+
+        return inventory

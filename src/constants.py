@@ -1,12 +1,8 @@
 from __future__ import annotations
 
-from colors import Colors
-from components import Fighter
-from components import Inventory
-from entity import Entity
-from map_objects import Point
+
+from map_objects.point import Point
 from rect import Rect
-from render_functions import RenderOrder
 
 
 class Constants:
@@ -39,12 +35,9 @@ class Constants:
     fov_light_walls: bool = True
     fov_radius: int = 10
 
-    @staticmethod
-    def create_player() -> Entity:
-        fighter_component = Fighter(hp=30, defense=2, power=5)
-        inventory_component = Inventory(capacity=26)
-        player = Entity(position=Point(x=0, y=0), char="@", color=Colors.WHITE, name="Player", blocks=True, render_order=RenderOrder.ACTOR, fighter=fighter_component, inventory=inventory_component)
-        return player
+    player_hp: int = 30
+    player_defense: int = 2
+    player_power: int = 5
 
     @property
     def message_x(self) -> int:

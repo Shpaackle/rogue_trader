@@ -154,3 +154,28 @@ class GameMap(tcod.map.Map):
                         y=row * 2,
                         s=f"[font=map][color={tile.color}]{tile.char}[/color][/font]"
                     )
+
+    def to_json(self) -> dict:
+        json_data = {
+            "width": self.width,
+            "height": self.height,
+            "explored": self._explored.tolist(),
+            "tile_map": self.tile_map.tolist()
+        }
+
+        return json_data
+
+    @classmethod
+    def from_json(cls, json_data) -> GameMap:
+        game_map = cls(width=json_data["width"], height=json_data["height"])
+
+        for i in range(game_map.height):
+            for j in range(game_map.width):
+                point = Point(x=j, y=i)
+                label = TileType(int(json_data["tile_map"][j][i]))
+                tile = Tile.from_label(point=point, label=label)
+                game_map.place_tile(point=point, tile=tile)
+                if json_data["explored"][j][i]:
+                    game_map.explore(point)
+
+        return game_map

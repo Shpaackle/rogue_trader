@@ -48,6 +48,21 @@ class BasicMonster(AI):
 
         return results
 
+    def to_json(self) -> dict:
+        json_data = {
+            "name": self.__class__.__name__
+        }
+
+        return json_data
+
+    @classmethod
+    def from_json(cls, json_data: dict, owner: Entity):
+        basic_monster = cls()
+
+        basic_monster.owner = owner
+
+        return basic_monster
+
 
 class ConfusedMonster(AI):
     def __init__(self, previous_ai: AI, number_of_turns: int = 10):
@@ -76,3 +91,30 @@ class ConfusedMonster(AI):
             results.append({"message": Message(f"The {self.owner.name} is no longer confused!", Colors.RED)})
 
         return results
+
+    def to_json(self) -> dict:
+        json_data = {
+            "name": self.__class__.__name__,
+            "ai_data": {
+                "previous_ai": self.previous_ai.__class__.__name__,
+                "number_of_turns": self.number_of_turns
+            }
+        }
+
+        return json_data
+
+    @classmethod
+    def from_json(cls, json_data: dict, owner: Entity):
+        previous_ai_name = json_data.get("previous_ai")
+        number_of_turns = json_data.get("number_of_turns")
+
+        if previous_ai_name == "BasicMonster":
+            previous_ai = BasicMonster()
+            previous_ai.owner = owner
+        else:
+            previous_ai = None
+
+        confused_monster = cls(previous_ai=previous_ai, number_of_turns=number_of_turns)
+        confused_monster.owner = owner
+
+        return confused_monster

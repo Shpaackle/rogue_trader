@@ -6,12 +6,13 @@ from bearlibterminal import terminal as blt
 import tcod
 
 from colors import Colors
+from components import BasicMonster, ConfusedMonster, Fighter, Inventory, Item
 from map_objects.game_map import GameMap
 from map_objects.point import Point
 from render_functions import RenderOrder
 
 if TYPE_CHECKING:
-    from components import BasicMonster, Fighter
+    from components import BasicMonster, ConfusedMonster, Fighter
     from components.inventory import Inventory
     from components.item import Item
 
@@ -32,7 +33,7 @@ class Entity:
         fighter=None,
         ai=None,
         item=None,
-        inventory=None
+        inventory=None,
     ):
         self.position: Point = position
         self.char: str = char
@@ -81,9 +82,11 @@ class Entity:
         self, target_position: Point, game_map: GameMap, entities: List["Entity"]
     ):
         d: Point = target_position - self.position
-        distance = self.position.distance_to(target_position)
+        distance: float = self.distance_to(target_position)
 
-        movement = Point(x=int(round(d.x / distance)), y=int(round(d.y / distance)))
+        x: int = int(round(d.x / distance))
+        y: int = int(round(d.y / distance))
+        movement: Point = Point(x=x, y=y)
 
         if not (
             game_map.is_blocked(target_position + movement)
@@ -147,8 +150,95 @@ class Entity:
             point = self.position
         color = blt.color_from_argb(*self.color.argb)
         blt.printf(
-            x=point.x * 2, y=point.y * 2, s=f"[font=map][color={color}]{self.char}[/color][/font]"
+            x=point.x * 2,
+            y=point.y * 2,
+            s=f"[font=map][color={color}][layer={self.render_order.value}]{self.char}[/color][/font]",
         )
+
+    def to_json(self) -> dict:
+        json_data = {
+            "x": self.position.x,
+            "y": self.position.y,
+            "char": self.char,
+            "color": self.color.name,
+            "name": self.name,
+            "blocks": self.blocks,
+            "render_order": self.render_order.value,
+        }
+
+        if self.ai:
+            json_data["ai"] = self.ai.to_json()
+
+        if self.fighter:
+            json_data["fighter"] = self.fighter.to_json()
+
+        if self.inventory:
+            json_data["inventory"] = self.inventory.to_json()
+
+        if self.item:
+            json_data["item"] = self.item.to_json()
+
+        return json_data
+
+    @classmethod
+    def from_json(cls, json_data):
+        x = json_data.get("x")
+        y = json_data.get("y")
+        char = json_data.get("char")
+        color = json_data.get("color")
+        name = json_data.get("name")
+        blocks = json_data.get("blocks")
+        render_order = json_data.get("render_order")
+
+        fighter_json = json_data.get("fighter")
+        ai_json = json_data.get("ai")
+        item_json = json_data.get("item")
+        inventory_json = json_data.get("inventory")
+
+        if fighter_json:
+            fighter = Fighter.from_json(json_data=fighter_json)
+        else:
+            fighter = None
+
+        if item_json:
+            item = Item.from_json(json_data=item_json)
+        else:
+            item = None
+
+        if inventory_json:
+            inventory = Inventory.from_json(json_data)
+        else:
+            inventory = None
+
+        entity = Entity(
+            position=Point(x=x, y=y),
+            char=char,
+            color=Colors[color],
+            name=name,
+            blocks=blocks,
+            render_order=RenderOrder(render_order),
+            fighter=fighter,
+            item=item,
+            inventory=inventory,
+        )
+
+        if ai_json:
+            ai_name = ai_json.get("name")
+
+            if ai_name == BasicMonster.__name__:
+                ai = BasicMonster.from_json(json_data=ai_json, owner=entity)
+            elif ai_name == ConfusedMonster.__name__:
+                ai = ConfusedMonster.from_json(json_data=ai_json, owner=entity)
+            else:
+                ai = None
+
+            entity.ai = ai
+
+        return entity
+
+    def distance_to(self, point: Point) -> float:
+        distance: float = self.position.distance_to(point)
+        return distance
 
 
 def get_blocking_entities_at_location(
