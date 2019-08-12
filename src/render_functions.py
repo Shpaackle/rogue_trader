@@ -33,8 +33,9 @@ LINE_STYLE = {
 }
 
 
-class RenderOrder(Enum):
-    CORPSE = 1
+class RenderLayer(Enum):
+    STAIRS = auto()
+    CORPSE = auto()
     ITEM = auto()
     ACTOR = auto()
 
@@ -104,16 +105,18 @@ def render_all(
     # Draw the map
     blt.clear()
     # blt.clear_area(x=0, y=0, w=camera.width, h=camera.height)
+    blt.layer(0)
     game_map.render(fov_map=fov_map, camera=camera)
 
     # Draw all entities in the list
     # entities_in_render_order = sorted(entities, key=lambda x: x.render_order.value)
     for entity in entities:
         if camera.in_bounds(entity.position):
-            if fov_map.fov[entity.x, entity.y]:
+            if fov_map.fov[entity.x, entity.y] or (entity.stairs and game_map.is_explored(entity.position)):
                 point = entity.position - camera.top_left
                 entity.draw(point)
 
+    blt.layer(0)
     render_bar(
         x=ui_panel.x,
         y=ui_panel.y,
@@ -125,11 +128,13 @@ def render_all(
         back_color=Colors.DARK_RED,
     )
 
+    blt.printf(ui_panel.x, ui_panel.y + 2, s=f"{game_map.dungeon_level}")
+
     names = get_names_under_mouse(
         mouse_position=mouse_position, entities=entities, fov_map=fov_map, camera=camera
     )
     color = blt.color_from_argb(*Colors.LIGHT_GRAY.argb)
-    blt.printf(ui_panel.x, ui_panel.y + 2, s=f"[color={color}]{names}")
+    blt.printf(ui_panel.x, ui_panel.y + 4, s=f"[color={color}]{names}")
 
     for i, message in enumerate(message_log.messages, 0):
         blt.printf(

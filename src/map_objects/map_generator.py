@@ -7,15 +7,16 @@ from typing import List
 import numpy as np
 
 from colors import Colors
-from components import BasicMonster, Fighter
+from components import BasicMonster, Fighter, Stairs
 from components.item import Item
+from constants import CONSTANTS
 from entity import Entity
-from game_messages import Message
+from game_messages import Message, MessageLog
 from item_functions import cast_confuse, cast_fireball, cast_lightning, heal
 from map_objects.point import Point
 from map_objects.game_map import GameMap
 from map_objects.tile import Tile
-from render_functions import RenderOrder
+from render_functions import RenderLayer
 
 
 INITIAL_CHANCE = 0.4
@@ -58,7 +59,7 @@ class MapGenerator:
         max_monsters: int,
         max_items: int,
     ):
-        self.generate_caves(width=width, height=height)
+        self.generate_caves(width=width, height=height, entities=entities)
 
         self.place_entities(
             entities=entities,
@@ -67,7 +68,7 @@ class MapGenerator:
             max_items=max_items,
         )
 
-    def generate_caves(self, width: int, height: int):
+    def generate_caves(self, width: int, height: int, entities: List[Entity]):
         self.initialize_cave(width=width, height=height)
         for _ in range(FIRST_STEP_REPEATS):
             self.cave_smooth_step(min_count=FIRST_STEP_MIN, max_count=FIRST_STEP_MAX)
@@ -78,6 +79,19 @@ class MapGenerator:
 
         cave: List[Point] = self.isolate_main_cave(caves)
         self.cave = self.remove_small_walls(cave)
+
+        stairs_component = Stairs(self.dungeon_level + 1)
+        point: Point = random.choice(self.cave)
+        down_stairs: Entity = Entity(position=point, char=">", color=Colors.WHITE, name="Stairs", render_order=RenderLayer.STAIRS, stairs=stairs_component)
+        entities.append(down_stairs)
+
+    @property
+    def dungeon_level(self):
+        return self.game_map.dungeon_level
+
+    @dungeon_level.setter
+    def dungeon_level(self, value: int):
+        self.game_map.dungeon_level = value
 
     def find_caves(self) -> List[List[Point]]:
         caves: List[List[Point]] = list()
@@ -201,7 +215,7 @@ class MapGenerator:
                         color=Colors.LIGHT_GREEN,
                         name="Orc",
                         blocks=True,
-                        render_order=RenderOrder.ACTOR,
+                        render_order=RenderLayer.ACTOR,
                         fighter=fighter_component,
                         ai=ai_component,
                     )
@@ -214,7 +228,7 @@ class MapGenerator:
                         color=Colors.DARKER_GREEN,
                         name="Troll",
                         blocks=True,
-                        render_order=RenderOrder.ACTOR,
+                        render_order=RenderLayer.ACTOR,
                         fighter=fighter_component,
                         ai=ai_component,
                     )
@@ -234,7 +248,7 @@ class MapGenerator:
                         char="!",
                         color=Colors.VIOLET,
                         name="Healing Potion",
-                        render_order=RenderOrder.ITEM,
+                        render_order=RenderLayer.ITEM,
                         item=item_component,
                     )
                 elif item_chance < 80:
@@ -253,7 +267,7 @@ class MapGenerator:
                         char="#",
                         color=Colors.RED,
                         name="Fireball Scroll",
-                        render_order=RenderOrder.ITEM,
+                        render_order=RenderLayer.ITEM,
                         item=item_component,
                     )
                 elif item_chance < 90:
@@ -270,7 +284,7 @@ class MapGenerator:
                         char="#",
                         color=Colors.LIGHT_PINK,
                         name="Confusion Scroll",
-                        render_order=RenderOrder.ITEM,
+                        render_order=RenderLayer.ITEM,
                         item=item_component,
                     )
                 else:
@@ -282,7 +296,7 @@ class MapGenerator:
                         char="#",
                         color=Colors.YELLOW,
                         name="Lightning Scroll",
-                        render_order=RenderOrder.ITEM,
+                        render_order=RenderLayer.ITEM,
                         item=item_component,
                     )
 

@@ -6,15 +6,14 @@ from bearlibterminal import terminal as blt
 import tcod
 
 from colors import Colors
-from components import BasicMonster, ConfusedMonster, Fighter, Inventory, Item
+import components
 from map_objects.game_map import GameMap
 from map_objects.point import Point
-from render_functions import RenderOrder
+from render_functions import RenderLayer
 
 if TYPE_CHECKING:
-    from components import BasicMonster, ConfusedMonster, Fighter
-    from components.inventory import Inventory
-    from components.item import Item
+    from components.entity_component import EntityComponent
+    import tcod.map
 
 
 class Entity:
@@ -29,22 +28,24 @@ class Entity:
         color: Colors,
         name: str,
         blocks: bool = False,
-        render_order: RenderOrder = RenderOrder.CORPSE,
-        fighter=None,
-        ai=None,
-        item=None,
-        inventory=None,
+        render_order: RenderLayer = RenderLayer.CORPSE,
+        fighter: Optional[components.Fighter] = None,
+        ai: Optional[EntityComponent] = None,
+        item: Optional[components.Item] = None,
+        inventory: Optional[components.Inventory] = None,
+        stairs: Optional[components.Stairs] = None
     ):
         self.position: Point = position
         self.char: str = char
         self.color: Colors = color
         self.name: str = name
         self.blocks: bool = blocks
-        self.render_order: RenderOrder = render_order
-        self.fighter = fighter
-        self.ai = ai
-        self.item = item
-        self.inventory = inventory
+        self.render_order: RenderLayer = render_order
+        self.fighter: Optional[components.Fighter] = fighter
+        self.ai: Optional[EntityComponent] = ai
+        self.item: Optional[components.Item] = item
+        self.inventory: Optional[components.Inventory] = inventory
+        self.stairs: Optional[components.Stairs] = stairs
 
         if self.fighter:
             self.fighter.owner = self
@@ -57,6 +58,9 @@ class Entity:
 
         if self.inventory:
             self.inventory.owner = self
+
+        if self.stairs:
+            self.stairs.owner = self
 
     @property
     def x(self) -> int:
@@ -149,10 +153,11 @@ class Entity:
         if point is None:
             point = self.position
         color = blt.color_from_argb(*self.color.argb)
+        blt.layer(self.render_order.value)
         blt.printf(
             x=point.x * 2,
             y=point.y * 2,
-            s=f"[font=map][color={color}][layer={self.render_order.value}]{self.char}[/color][/font]",
+            s=f"[font=map][color={color}]{self.char}[/color][/font]",
         )
 
     def to_json(self) -> dict:
@@ -178,37 +183,46 @@ class Entity:
         if self.item:
             json_data["item"] = self.item.to_json()
 
+        if self.stairs:
+            json_data["stairs"] = self.stairs.to_json()
+
         return json_data
 
     @classmethod
     def from_json(cls, json_data):
-        x = json_data.get("x")
-        y = json_data.get("y")
-        char = json_data.get("char")
-        color = json_data.get("color")
-        name = json_data.get("name")
-        blocks = json_data.get("blocks")
-        render_order = json_data.get("render_order")
+        x: int = json_data.get("x")
+        y: int = json_data.get("y")
+        char: str = json_data.get("char")
+        color: str = json_data.get("color")
+        name: str = json_data.get("name")
+        blocks: bool = json_data.get("blocks")
+        render_order: RenderLayer = json_data.get("render_order")
 
-        fighter_json = json_data.get("fighter")
-        ai_json = json_data.get("ai")
-        item_json = json_data.get("item")
-        inventory_json = json_data.get("inventory")
+        fighter_json: dict = json_data.get("fighter")
+        ai_json: dict = json_data.get("ai")
+        item_json: dict = json_data.get("item")
+        inventory_json: dict = json_data.get("inventory")
+        stairs_json: int = json_data.get("stairs")
 
         if fighter_json:
-            fighter = Fighter.from_json(json_data=fighter_json)
+            fighter = components.Fighter.from_json(json_data=fighter_json)
         else:
             fighter = None
 
         if item_json:
-            item = Item.from_json(json_data=item_json)
+            item = components.Item.from_json(json_data=item_json)
         else:
             item = None
 
         if inventory_json:
-            inventory = Inventory.from_json(json_data)
+            inventory = components.Inventory.from_json(json_data)
         else:
             inventory = None
+
+        if stairs_json:
+            stairs = components.Stairs(stairs_json)
+        else:
+            stairs = None
 
         entity = Entity(
             position=Point(x=x, y=y),
@@ -216,19 +230,20 @@ class Entity:
             color=Colors[color],
             name=name,
             blocks=blocks,
-            render_order=RenderOrder(render_order),
+            render_order=RenderLayer(render_order),
             fighter=fighter,
             item=item,
             inventory=inventory,
+            stairs=stairs
         )
 
         if ai_json:
-            ai_name = ai_json.get("name")
+            ai_name: str = ai_json.get("name")
 
-            if ai_name == BasicMonster.__name__:
-                ai = BasicMonster.from_json(json_data=ai_json, owner=entity)
-            elif ai_name == ConfusedMonster.__name__:
-                ai = ConfusedMonster.from_json(json_data=ai_json, owner=entity)
+            if ai_name == components.BasicMonster.__name__:
+                ai = components.BasicMonster.from_json(json_data=ai_json, owner=entity)
+            elif ai_name == components.ConfusedMonster.__name__:
+                ai = components.ConfusedMonster.from_json(json_data=ai_json, owner=entity)
             else:
                 ai = None
 

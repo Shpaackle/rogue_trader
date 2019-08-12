@@ -48,6 +48,9 @@ def handle_player_turn_keys(key: int) -> dict:
     elif key == blt.TK_D:
         return {"drop_inventory": True}
 
+    elif key == blt.TK_ENTER:
+        return {"take_stairs": True}
+
     if key in {blt.TK_ESCAPE, blt.TK_Q, blt.TK_CLOSE}:
         return {"exit": True}
 

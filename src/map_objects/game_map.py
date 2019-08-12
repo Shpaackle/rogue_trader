@@ -20,12 +20,14 @@ EMPTY = 0
 
 
 class GameMap(tcod.map.Map):
-    def __init__(self, width: int, height: int):
+    def __init__(self, width: int, height: int, dungeon_level: int = 1):
         super(GameMap, self).__init__(width=width, height=height, order="F")
 
         self.cave_map: np.array = np.zeros((width, height), order="F")
         self._explored: np.array = np.full((width, height), order="F", fill_value=False)
         self.tile_map: np.array = np.zeros((width, height), order="F")
+
+        self.dungeon_level: int = dungeon_level
 
     def is_explored(self, point: Point) -> bool:
         return self._explored[point.x, point.y]
@@ -161,6 +163,7 @@ class GameMap(tcod.map.Map):
             "height": self.height,
             "explored": self._explored.tolist(),
             "tile_map": self.tile_map.tolist(),
+            "dungeon_level": self.dungeon_level
         }
 
         return json_data
@@ -177,5 +180,7 @@ class GameMap(tcod.map.Map):
                 game_map.place_tile(point=point, tile=tile)
                 if json_data["explored"][j][i]:
                     game_map.explore(point)
+
+        game_map.dungeon_level = json_data["dungeon_level"]
 
         return game_map

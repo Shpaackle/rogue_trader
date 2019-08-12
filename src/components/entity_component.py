@@ -8,3 +8,6 @@ if TYPE_CHECKING:
 
 class EntityComponent:
     owner: Optional[Entity] = None
+
+    def to_json(self) -> dict:
+        raise NotImplementedError

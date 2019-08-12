@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from colors import Colors
 from game_messages import Message
-from render_functions import RenderOrder
+from render_functions import RenderLayer
 
 if TYPE_CHECKING:
     from entity import Entity
@@ -26,6 +26,6 @@ def kill_monster(monster: Entity):
     monster.fighter = None
     monster.ai = None
     monster.name = f"remains of {monster.name}"
-    monster.render_order = RenderOrder.CORPSE
+    monster.render_order = RenderLayer.CORPSE
 
     return death_message

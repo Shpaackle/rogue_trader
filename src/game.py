@@ -9,10 +9,10 @@ from colors import Colors
 from components import Fighter, Inventory
 from constants import CONSTANTS
 from entity import Entity
-from game_messages import MessageLog
+from game_messages import MessageLog, Message
 from game_states import GameStates
 from map_objects import GameMap, MapGenerator, Point
-from render_functions import RenderOrder
+from render_functions import RenderLayer
 
 if TYPE_CHECKING:
     import tcod.map
@@ -124,7 +124,7 @@ class Game:
             color=Colors.WHITE,
             name="Player",
             blocks=True,
-            render_order=RenderOrder.ACTOR,
+            render_order=RenderLayer.ACTOR,
             fighter=fighter_component,
             inventory=inventory_component,
         )
@@ -140,3 +140,26 @@ class Game:
         game.camera: Optional[Camera] = Camera(player=game.player)
 
         return game
+
+    def next_floor(self):
+        entities = [self.player]
+        dungeon_level = self.map_generator.dungeon_level
+
+        self.map_generator.generate_caves(width=CONSTANTS.map_width, height=CONSTANTS.map_height, entities=entities)
+
+        self.game_map.dungeon_level = dungeon_level + 1
+
+        self.map_generator.place_entities(
+            entities=entities,
+            min_monsters=CONSTANTS.min_monsters,
+            max_monsters=CONSTANTS.max_monsters,
+            max_items=CONSTANTS.max_items,
+        )
+
+        self.player.fighter.heal(self.player.fighter.max_hp // 2)
+        self.player.position = self.map_generator.player_start_point
+
+        self.message_log.add_message(Message("You take a moment to rest, and recover your strength.", Colors.LIGHT_VIOLET))
+
+        self.entities = entities
+        self.camera.recenter()
