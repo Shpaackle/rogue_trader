@@ -207,7 +207,7 @@ class MapGenerator:
 
             if not any([entity for entity in entities if entity.position == point]):
                 if random.randint(0, 100) < 80:
-                    fighter_component: Fighter = Fighter(hp=10, defense=0, power=3)
+                    fighter_component: Fighter = Fighter(hp=10, defense=0, power=3, xp=35)
                     ai_component: BasicMonster = BasicMonster()
                     monster: Entity = Entity(
                         position=point,
@@ -220,7 +220,7 @@ class MapGenerator:
                         ai=ai_component,
                     )
                 else:
-                    fighter_component: Fighter = Fighter(hp=16, defense=1, power=4)
+                    fighter_component: Fighter = Fighter(hp=16, defense=1, power=4, xp=100)
                     ai_component: BasicMonster = BasicMonster()
                     monster: Entity = Entity(
                         position=point,

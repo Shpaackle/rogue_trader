@@ -6,7 +6,7 @@ from typing import List, Optional, TYPE_CHECKING
 
 from camera import Camera
 from colors import Colors
-from components import Fighter, Inventory
+from components import Fighter, Inventory, Level
 from constants import CONSTANTS
 from entity import Entity
 from game_messages import MessageLog, Message
@@ -118,6 +118,7 @@ class Game:
             power=CONSTANTS.player_power,
         )
         inventory_component: Inventory = Inventory(capacity=26)
+        level_component = Level()
         player: Optional[Entity] = Entity(
             position=Point(0, 0),
             char="@",
@@ -127,6 +128,7 @@ class Game:
             render_order=RenderLayer.ACTOR,
             fighter=fighter_component,
             inventory=inventory_component,
+            level=level_component
         )
         game.player: Optional[Entity] = player
         game.entities: Optional[List[Entity]] = [player]

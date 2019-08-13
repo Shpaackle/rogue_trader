@@ -13,6 +13,7 @@ from rect import Rect
 if TYPE_CHECKING:
     from camera import Camera
     from components.inventory import Inventory
+    from entity import Entity
 
 
 class Menu(Rect):
@@ -95,6 +96,14 @@ def main_menu(camera_width: int):
         options=options,
         width=CONSTANTS.screen_width,
     )
+
+
+def level_up_menu(header, player: Entity, menu_width, screen_width, screen_height):
+    options = [f"Constitution (+20HP, from {player.fighter.max_hp}",
+               f"Strength (+1 attack, from {player.fighter.power}",
+               f"Agility (+1 defense, from {player.fighter.defense}"]
+
+    menu(camera_width=menu_width, header=header, options=options, width=screen_width)
 
 
 def message_box(header: str, width: int, screen_width: int, screen_height: int):

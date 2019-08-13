@@ -33,7 +33,8 @@ class Entity:
         ai: Optional[EntityComponent] = None,
         item: Optional[components.Item] = None,
         inventory: Optional[components.Inventory] = None,
-        stairs: Optional[components.Stairs] = None
+        stairs: Optional[components.Stairs] = None,
+        level: Optional[components.Level] = None
     ):
         self.position: Point = position
         self.char: str = char
@@ -46,6 +47,7 @@ class Entity:
         self.item: Optional[components.Item] = item
         self.inventory: Optional[components.Inventory] = inventory
         self.stairs: Optional[components.Stairs] = stairs
+        self.level: Optional[components.Level] = level
 
         if self.fighter:
             self.fighter.owner = self
@@ -61,6 +63,9 @@ class Entity:
 
         if self.stairs:
             self.stairs.owner = self
+
+        if self.level:
+            self.level.owner = self
 
     @property
     def x(self) -> int:
@@ -186,6 +191,9 @@ class Entity:
         if self.stairs:
             json_data["stairs"] = self.stairs.to_json()
 
+        if self.level:
+            json_data["level"] = self.level.to_json()
+
         return json_data
 
     @classmethod
@@ -203,6 +211,7 @@ class Entity:
         item_json: dict = json_data.get("item")
         inventory_json: dict = json_data.get("inventory")
         stairs_json: int = json_data.get("stairs")
+        level_json: dict = json_data.get("level")
 
         if fighter_json:
             fighter = components.Fighter.from_json(json_data=fighter_json)
@@ -224,6 +233,11 @@ class Entity:
         else:
             stairs = None
 
+        if level_json:
+            level = components.Level(current_level=level_json["current_level"], current_xp=level_json["current_xp"], level_up_base=level_json["level_up_base"], level_up_factor=level_json["level_up_factor"])
+        else:
+            level = None
+
         entity = Entity(
             position=Point(x=x, y=y),
             char=char,
@@ -234,7 +248,8 @@ class Entity:
             fighter=fighter,
             item=item,
             inventory=inventory,
-            stairs=stairs
+            stairs=stairs,
+            level=level
         )
 
         if ai_json:

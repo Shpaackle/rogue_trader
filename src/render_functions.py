@@ -8,7 +8,7 @@ from bearlibterminal import terminal as blt
 from colors import Colors
 from game_states import GameStates
 from map_objects.point import Point
-from menus import inventory_menu
+from menus import inventory_menu, level_up_menu
 
 if TYPE_CHECKING:
     import tcod.map
@@ -165,5 +165,8 @@ def render_all(
             inventory=player.inventory,
             inventory_width=50,
         )
+
+    elif game_state == GameStates.LEVEL_UP:
+        level_up_menu(header="Level up! Choose a stat to raise:", player=player, menu_width=camera.width, screen_width=camera.width, screen_height=camera.height)
 
     blt.refresh()

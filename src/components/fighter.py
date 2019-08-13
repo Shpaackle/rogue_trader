@@ -11,11 +11,12 @@ if TYPE_CHECKING:
 
 
 class Fighter(EntityComponent):
-    def __init__(self, hp: int, defense: int, power: int, max_hp: int = None):
+    def __init__(self, hp: int, defense: int, power: int, max_hp: int = None, xp: int = 0):
         super(Fighter, self).__init__()
         self.hp: int = hp
         self.defense: int = defense
         self.power: int = power
+        self.xp: int = xp
 
         if max_hp is None:
             self.max_hp: int = hp
@@ -28,7 +29,7 @@ class Fighter(EntityComponent):
         self.hp -= amount
 
         if self.hp <= 0:
-            results.append({"dead": self.owner})
+            results.append({"dead": self.owner, "xp": self.xp})
 
         return results
 
@@ -72,6 +73,7 @@ class Fighter(EntityComponent):
             "hp": self.hp,
             "defense": self.defense,
             "power": self.power,
+            "xp": self.xp
         }
 
         return json_data
@@ -83,6 +85,7 @@ class Fighter(EntityComponent):
             defense=json_data.get("defense"),
             power=json_data.get("power"),
             max_hp=json_data.get("max_hp"),
+            xp=json_data.get("xp", 0)
         )
 
         return fighter

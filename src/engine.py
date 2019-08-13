@@ -80,6 +80,7 @@ def play_game(game: Game):
             drop_inventory: bool = action.get("drop_inventory", False)
             inventory_index: Optional[int] = action.get("inventory_index")
             take_stairs: bool = action.get("take_stairs", False)
+            level_up: str = action.get("level_up")
             exit_action: bool = action.get("exit", False)
 
             left_click: Point = mouse_action.get("left_click")
@@ -149,6 +150,17 @@ def play_game(game: Game):
                 else:
                     game.message_log.add_message(Message("There are no stairs here.", Colors.YELLOW))
 
+            if level_up:
+                if level_up == "hp":
+                    game.player.fighter.max_hp += 20
+                    game.player.fighter.hp += 20
+                elif level_up == "str":
+                    game.player.fighter.power += 1
+                elif level_up == "dex":
+                    game.player.fighter.defense += 1
+
+                game.change_state(game.previous_state)
+
             if game.game_state == GameStates.TARGETING:
                 if left_click:
                     target_position: Point = game.camera.map_point(left_click)
@@ -182,6 +194,7 @@ def play_game(game: Game):
                 item_consumed: Optional[Entity] = player_turn_result.get("consumed")
                 item_dropped: Optional[Entity] = player_turn_result.get("item_dropped")
                 targeting: Optional[Entity] = player_turn_result.get("targeting")
+                xp: Optional[int] = player_turn_result.get("xp")
                 targeting_cancelled: bool = player_turn_result.get(
                     "targeting_cancelled", False
                 )
@@ -193,6 +206,14 @@ def play_game(game: Game):
                     game.game_state = game.previous_state
 
                     game.message_log.add_message(Message("Targeting cancelled"))
+
+                if xp:
+                    leveled_up = game.player.level.add_xp(xp=xp)
+                    game.message_log.add_message(Message(f"You gain {xp} experience points."))
+
+                    if leveled_up:
+                        game.message_log.add_message(Message(f"Your battle skills grow stronger! You reached level {game.player.level.current_level}!", Colors.YELLOW))
+                        game.change_state(GameStates.LEVEL_UP)
 
                 if dead_entity:
                     if dead_entity == game.player:

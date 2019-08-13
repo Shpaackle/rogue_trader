@@ -39,6 +39,9 @@ class Constants:
     player_defense: int = 2
     player_power: int = 5
 
+    level_up_base: int = 200
+    level_up_factor: int = 150
+
     @property
     def message_x(self) -> int:
         message_x: int = (self.bar_width + 2) * 2

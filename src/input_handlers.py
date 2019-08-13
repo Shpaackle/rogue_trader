@@ -17,6 +17,8 @@ def handle_keys(key: int, game_state: GameStates) -> dict:
         return handle_targeting_keys(key=key)
     elif game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
         return handle_inventory_keys(key=key)
+    elif game_state == GameStates.LEVEL_UP:
+        return handle_level_up_menu(key=key)
 
     return {}
 
@@ -57,14 +59,14 @@ def handle_player_turn_keys(key: int) -> dict:
     return {}
 
 
-def handle_targeting_keys(key: int) -> dict:
+def handle_targeting_keys(key: int) -> Dict[str, bool]:
     if key == blt.TK_ESCAPE:
         return {"exit": True}
 
     return {}
 
 
-def handle_player_dead_keys(key: int) -> dict:
+def handle_player_dead_keys(key: int) -> Dict[str, bool]:
     if key == blt.TK_I:
         return {"show_inventory": True}
 
@@ -98,7 +100,7 @@ def handle_mouse(key: int) -> Dict[str, Point]:
     return {}
 
 
-def handle_main_menu(key: int) -> Optional[Dict[str, bool]]:
+def handle_main_menu(key: int) -> Dict[str, bool]:
     if key == blt.TK_A:
         print("returned new_game")
         return {"new_game": True}
@@ -108,5 +110,16 @@ def handle_main_menu(key: int) -> Optional[Dict[str, bool]]:
     elif key in {blt.TK_C, blt.TK_ESCAPE, blt.TK_CLOSE}:
         print("returned exit_game")
         return {"exit_game": True}
+
+    return {}
+
+
+def handle_level_up_menu(key: int) -> dict:
+    if key == blt.TK_A:
+        return {"level_up": "hp"}
+    elif key == blt.TK_B:
+        return {"level_up": "str"}
+    elif key == blt.TK_C:
+        return {"level_up": "dex"}
 
     return {}
