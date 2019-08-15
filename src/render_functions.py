@@ -8,7 +8,7 @@ from bearlibterminal import terminal as blt
 from colors import Colors
 from game_states import GameStates
 from map_objects.point import Point
-from menus import inventory_menu, level_up_menu
+from menus import character_screen, inventory_menu, level_up_menu
 
 if TYPE_CHECKING:
     import tcod.map
@@ -86,7 +86,7 @@ def render_bar(
     blt.printf(x, y, s=f"[font=bar][bkcolor={bk_color}]{bar}")
     blt.printf(x, y, s=f"[font=bar][bkcolor={bar_color}]{bar[:bar_width]}")
 
-    blt.printf(x=int(x + total_width / 2), y=y, s=bar_text)
+    blt.puts(x=int(x + total_width / 2), y=y, s=bar_text, align=blt.TK_ALIGN_CENTER)
 
 
 def render_all(
@@ -137,13 +137,16 @@ def render_all(
     blt.printf(ui_panel.x, ui_panel.y + 4, s=f"[color={color}]{names}")
 
     for i, message in enumerate(message_log.messages, 0):
+        color = blt.color_from_argb(*message.color.argb)
         blt.printf(
             x=message_log.x,
             y=ui_panel.y + (i * 2),
-            s=f"[TK_ALIGN_LEFT][color={blt.color_from_argb(*message.color.argb)}]{message.text}",
+            s=f"[color={color}]{message.text}",
         )
 
-    # blt.printf(camera.width * 2 + 2, 4, f"Mouse position: {mouse_position}")
+    fg_color = blt.color_from_argb(*Colors.RED.argb)
+    bk_color = blt.color_from_argb(*Colors.YELLOW.argb)
+    blt.printf(camera.width * 2 + 2, 4, f"[color={fg_color}]A[/color][+][color={bk_color}][U+2588][/color]")
     # map_point = Point(x=abs(mouse_position.x - camera.center.x), y=abs(mouse_position.y - camera.center.y))
     # blt.printf(camera.width * 2 + 2, 6, f"Map point: {map_point}")
     # blt.printf((camera.width + 1) * 2, 8, f"Player position: {player.position}")
@@ -168,5 +171,8 @@ def render_all(
 
     elif game_state == GameStates.LEVEL_UP:
         level_up_menu(header="Level up! Choose a stat to raise:", player=player, menu_width=camera.width, screen_width=camera.width, screen_height=camera.height)
+
+    elif game_state == GameStates.CHARACTER_SCREEN:
+        character_screen(player, 30, 10, screen_width=camera.width, screen_height=camera.height)
 
     blt.refresh()

@@ -224,7 +224,7 @@ class Entity:
             item = None
 
         if inventory_json:
-            inventory = components.Inventory.from_json(json_data)
+            inventory = components.Inventory.from_json(json_data=inventory_json)
         else:
             inventory = None
 

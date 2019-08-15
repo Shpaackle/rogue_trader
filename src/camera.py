@@ -7,6 +7,7 @@ from bearlibterminal import terminal as blt
 
 from map_objects import Point
 from rect import Rect
+from render_functions import RenderLayer
 from ui.panel import Panel
 
 if TYPE_CHECKING:
@@ -116,3 +117,11 @@ class Camera(Rect):
         json_data = {"width": self.width, "height": self.height}
 
         return json_data
+
+    def clear_view(self):
+        for i in range(len(RenderLayer)):
+            blt.layer(i)
+            blt.clear_area(0, 0, self.width * 2, self.height * 2)
+
+        blt.layer(RenderLayer.ACTOR.value)
+        blt.put(self.center.x, self.center.y, " ")

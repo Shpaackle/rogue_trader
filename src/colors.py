@@ -28,6 +28,7 @@ class Colors(Enum):
     LIGHT_CYAN = COLOR(r=115, g=255, b=255, a=0)
     LIGHT_PINK = COLOR(r=255, g=115, b=185, a=0)
     LIGHT_VIOLET = COLOR(r=185, g=115, b=255, a=0)
+    DARK_GREY = COLOR(r=95, g=95, b=95, a=0)
 
     @property
     def red(self):

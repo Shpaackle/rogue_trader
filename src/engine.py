@@ -75,12 +75,14 @@ def play_game(game: Game):
             mouse_action: dict = handle_mouse(key=terminal_input)
 
             movement: Optional[Point] = action.get("move")
+            wait: bool = action.get("wait", False)
             pickup: bool = action.get("pickup", False)
             show_inventory: bool = action.get("show_inventory", False)
             drop_inventory: bool = action.get("drop_inventory", False)
             inventory_index: Optional[int] = action.get("inventory_index")
             take_stairs: bool = action.get("take_stairs", False)
             level_up: str = action.get("level_up")
+            show_character_screen: bool = action.get("show_character_screen", False)
             exit_action: bool = action.get("exit", False)
 
             left_click: Point = mouse_action.get("left_click")
@@ -104,6 +106,8 @@ def play_game(game: Game):
                         game.camera.recenter()
 
                     game.change_state(GameStates.ENEMY_TURN)
+            elif wait:
+                game.change_state(GameStates.ENEMY_TURN)
             elif pickup and game.game_state == GameStates.PLAYER_TURN:
                 for entity in game.entities:
                     if entity.item and entity.position == game.player.position:
@@ -161,6 +165,9 @@ def play_game(game: Game):
 
                 game.change_state(game.previous_state)
 
+            if show_character_screen:
+                game.change_state(GameStates.CHARACTER_SCREEN)
+
             if game.game_state == GameStates.TARGETING:
                 if left_click:
                     target_position: Point = game.camera.map_point(left_click)
@@ -179,6 +186,7 @@ def play_game(game: Game):
                 if game.game_state in (
                     GameStates.SHOW_INVENTORY,
                     GameStates.DROP_INVENTORY,
+                    GameStates.CHARACTER_SCREEN
                 ):
                     game.change_state(GameStates.PLAYER_TURN)
                 elif game.game_state == GameStates.TARGETING:

@@ -6,9 +6,11 @@ from typing import List, TYPE_CHECKING
 import tcod
 from bearlibterminal import terminal as blt
 
+from colors import Colors
 from constants import CONSTANTS
 from map_objects.point import Point
 from rect import Rect
+# from render_functions import RenderLayer
 
 if TYPE_CHECKING:
     from camera import Camera
@@ -42,7 +44,7 @@ class Menu(Rect):
 
 
 def menu(
-    camera_width: int, header: str, options: List[str], width: int, panel_y: int = None
+    camera_width: int, header: str, options: List[str], width: int, panel_y: int = None, camera: Camera = None
 ):
     if len(options) > 26:
         raise ValueError("Cannot have a menu with more than 26 options.")
@@ -59,6 +61,9 @@ def menu(
         header=wrapped_header,
         options=options,
     )
+
+    if camera:
+        camera.clear_view()
 
     for i, text_line in enumerate(panel.header):
         blt.printf(x=panel.x, y=panel.y + i * 2, s=f"{text_line}")
@@ -81,7 +86,7 @@ def inventory_menu(
         options = [item.name for item in inventory.items]
 
     menu(
-        camera_width=camera.width, header=header, options=options, width=inventory_width
+        camera_width=camera.width, header=header, options=options, width=inventory_width, camera=camera
     )
 
 
@@ -104,6 +109,23 @@ def level_up_menu(header, player: Entity, menu_width, screen_width, screen_heigh
                f"Agility (+1 defense, from {player.fighter.defense}"]
 
     menu(camera_width=menu_width, header=header, options=options, width=screen_width)
+
+
+def character_screen(player: Entity, character_screen_width: int, character_screen_height: int, screen_width: int, screen_height: int):
+    blt.bkcolor(blt.color_from_argb(*Colors.DARK_GREY.argb))
+    for i in range(5):
+        blt.layer(i)
+        blt.clear_area(0, 0, character_screen_width * 2, character_screen_height * 2)
+    blt.bkcolor("none")
+    # for i in range(5):
+    #     blt.puts()
+    blt.puts(0, 1, "Character Information")
+    blt.puts(0, 3, f"Level: {player.level.current_level}")
+    blt.puts(0, 5, f"Experience: {player.level.current_xp}")
+    blt.puts(0, 7, f"Experience to Level: {player.level.experience_to_next_level}")
+    blt.puts(0, 11, f"Maximum HP: {player.fighter.max_hp}")
+    blt.puts(0, 13, f"Attack: {player.fighter.power}")
+    blt.puts(0, 15, f"Defense: {player.fighter.defense}")
 
 
 def message_box(header: str, width: int, screen_width: int, screen_height: int):

@@ -19,6 +19,8 @@ def handle_keys(key: int, game_state: GameStates) -> dict:
         return handle_inventory_keys(key=key)
     elif game_state == GameStates.LEVEL_UP:
         return handle_level_up_menu(key=key)
+    elif game_state == GameStates.CHARACTER_SCREEN:
+        return handle_character_screen(key=key)
 
     return {}
 
@@ -40,6 +42,8 @@ def handle_player_turn_keys(key: int) -> dict:
         return {"move": Point(-1, 1)}
     elif key == blt.TK_N:
         return {"move": Point(1, 1)}
+    elif key == blt.TK_Z:
+        return {"wait": True}
 
     elif key == blt.TK_G:
         return {"pickup": True}
@@ -52,6 +56,9 @@ def handle_player_turn_keys(key: int) -> dict:
 
     elif key == blt.TK_ENTER:
         return {"take_stairs": True}
+
+    elif key == blt.TK_C:
+        return {"show_character_screen": True}
 
     if key in {blt.TK_ESCAPE, blt.TK_Q, blt.TK_CLOSE}:
         return {"exit": True}
@@ -87,19 +94,6 @@ def handle_inventory_keys(key: int) -> dict:
     return {}
 
 
-def handle_mouse(key: int) -> Dict[str, Point]:
-    mouse_position: Point = Point(
-        x=blt.state(blt.TK_MOUSE_X) // 2, y=blt.state(blt.TK_MOUSE_Y) // 2
-    )
-
-    if key == blt.TK_MOUSE_LEFT:
-        return {"left_click": mouse_position}
-    elif key == blt.TK_MOUSE_RIGHT:
-        return {"right_click": mouse_position}
-
-    return {}
-
-
 def handle_main_menu(key: int) -> Dict[str, bool]:
     if key == blt.TK_A:
         print("returned new_game")
@@ -123,3 +117,24 @@ def handle_level_up_menu(key: int) -> dict:
         return {"level_up": "dex"}
 
     return {}
+
+
+def handle_character_screen(key: int) -> dict:
+    if key == blt.TK_ESCAPE:
+        return {"exit": True}
+
+    return {}
+
+
+def handle_mouse(key: int) -> Dict[str, Point]:
+    mouse_position: Point = Point(
+        x=blt.state(blt.TK_MOUSE_X) // 2, y=blt.state(blt.TK_MOUSE_Y) // 2
+    )
+
+    if key == blt.TK_MOUSE_LEFT:
+        return {"left_click": mouse_position}
+    elif key == blt.TK_MOUSE_RIGHT:
+        return {"right_click": mouse_position}
+
+    return {}
+

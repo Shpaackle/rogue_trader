@@ -23,7 +23,7 @@ class Inventory(EntityComponent):
         if items is None:
             self.items: List[Entity] = []
         else:
-            self.items: List[Entity] = []
+            self.items: List[Entity] = items
 
     def add_item(self, item: Entity) -> List[dict]:
         results = []
