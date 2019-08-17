@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import random
 from queue import Queue
-from typing import List
+from typing import List, Dict
 
 import numpy as np
 
@@ -16,6 +16,7 @@ from item_functions import cast_confuse, cast_fireball, cast_lightning, heal
 from map_objects.point import Point
 from map_objects.game_map import GameMap
 from map_objects.tile import Tile
+from random_utils import from_dungeon_level, random_choice_from_dict
 from render_functions import RenderLayer
 
 
@@ -56,16 +57,12 @@ class MapGenerator:
         height: int,
         entities: List[Entity],
         min_monsters: int,
-        max_monsters: int,
-        max_items: int,
     ):
         self.generate_caves(width=width, height=height, entities=entities)
 
         self.place_entities(
             entities=entities,
             min_monsters=min_monsters,
-            max_monsters=max_monsters,
-            max_items=max_items,
         )
 
     def generate_caves(self, width: int, height: int, entities: List[Entity]):
@@ -196,18 +193,32 @@ class MapGenerator:
         self,
         entities: List[Entity],
         min_monsters: int,
-        max_monsters: int,
-        max_items: int,
     ):
+        max_monsters: int = from_dungeon_level(table=[[10, 1], [14, 4], [18, 6]], dungeon_level=self.dungeon_level)
+        max_items: int = from_dungeon_level(table=[[8, 1], [16, 4]], dungeon_level=self.dungeon_level)
+
         number_of_monsters: int = random.randint(min_monsters, max_monsters)
-        number_of_items: int = random.randint(30, max_items)
+        number_of_items: int = random.randint(1, max_items)
+
+        monster_chances: Dict[str, int] = {
+            "orc": 80,
+            "troll": from_dungeon_level(table=[[15, 3], [30, 5], [60, 7]], dungeon_level=self.dungeon_level)
+        }
+
+        item_chances: Dict[str, int] = {
+            "healing_potion": 35,
+            "lightning_scroll": from_dungeon_level(table=[[25, 4]], dungeon_level=self.dungeon_level),
+            "fireball_scroll": from_dungeon_level(table=[[25, 6]], dungeon_level=self.dungeon_level),
+            "confusion_scroll": from_dungeon_level(table=[[10, 2]], dungeon_level=self.dungeon_level)
+        }
 
         for i in range(number_of_monsters):
             point: Point = random.choice(self.cave)
 
             if not any([entity for entity in entities if entity.position == point]):
-                if random.randint(0, 100) < 80:
-                    fighter_component: Fighter = Fighter(hp=10, defense=0, power=3, xp=35)
+                monster_choice = random_choice_from_dict(monster_chances)
+                if monster_choice == "orc":
+                    fighter_component: Fighter = Fighter(hp=20, defense=0, power=4, xp=35)
                     ai_component: BasicMonster = BasicMonster()
                     monster: Entity = Entity(
                         position=point,
@@ -220,7 +231,7 @@ class MapGenerator:
                         ai=ai_component,
                     )
                 else:
-                    fighter_component: Fighter = Fighter(hp=16, defense=1, power=4, xp=100)
+                    fighter_component: Fighter = Fighter(hp=30, defense=2, power=8, xp=100)
                     ai_component: BasicMonster = BasicMonster()
                     monster: Entity = Entity(
                         position=point,
@@ -239,10 +250,10 @@ class MapGenerator:
             point: Point = random.choice(self.cave)
 
             if not any([entity for entity in entities if entity.position == point]):
-                item_chance: int = random.randint(0, 100)
+                item_choice: str = random_choice_from_dict(item_chances)
 
-                if item_chance < 70:
-                    item_component: Item = Item(use_function=heal, amount=4)
+                if item_choice == "healing_potion":
+                    item_component: Item = Item(use_function=heal, amount=40)
                     item: Entity = Entity(
                         position=point,
                         char="!",
@@ -251,7 +262,7 @@ class MapGenerator:
                         render_order=RenderLayer.ITEM,
                         item=item_component,
                     )
-                elif item_chance < 80:
+                elif item_choice == "fireball_scroll":
                     item_component: Item = Item(
                         use_function=cast_fireball,
                         targeting=True,
@@ -259,7 +270,7 @@ class MapGenerator:
                             "Left-click a target tile for the fireball, or right-click to cancel.",
                             Colors.LIGHT_CYAN,
                         ),
-                        damage=12,
+                        damage=25,
                         radius=3,
                     )
                     item = Entity(
@@ -270,7 +281,7 @@ class MapGenerator:
                         render_order=RenderLayer.ITEM,
                         item=item_component,
                     )
-                elif item_chance < 90:
+                elif item_choice == "confusion_scroll":
                     item_component: Item = Item(
                         use_function=cast_confuse,
                         targeting=True,
@@ -289,7 +300,7 @@ class MapGenerator:
                     )
                 else:
                     item_component: Item = Item(
-                        use_function=cast_lightning, damage=20, maximum_range=5
+                        use_function=cast_lightning, damage=40, maximum_range=5
                     )
                     item: Entity = Entity(
                         position=point,

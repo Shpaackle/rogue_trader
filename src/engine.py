@@ -340,8 +340,6 @@ def main():
                         height=CONSTANTS.map_height,
                         entities=game.entities,
                         min_monsters=CONSTANTS.min_monsters,
-                        max_monsters=CONSTANTS.max_monsters,
-                        max_items=CONSTANTS.max_items,
                     )
                     game.game_state = GameStates.PLAYER_TURN
                     game.player.position = game.map_generator.player_start_point

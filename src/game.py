@@ -154,8 +154,6 @@ class Game:
         self.map_generator.place_entities(
             entities=entities,
             min_monsters=CONSTANTS.min_monsters,
-            max_monsters=CONSTANTS.max_monsters,
-            max_items=CONSTANTS.max_items,
         )
 
         self.player.fighter.heal(self.player.fighter.max_hp // 2)

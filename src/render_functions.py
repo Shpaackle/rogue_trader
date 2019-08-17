@@ -128,7 +128,7 @@ def render_all(
         back_color=Colors.DARK_RED,
     )
 
-    blt.printf(ui_panel.x, ui_panel.y + 2, s=f"{game_map.dungeon_level}")
+    blt.printf(ui_panel.x, ui_panel.y + 2, s=f"Dungeon level: {game_map.dungeon_level}")
 
     names = get_names_under_mouse(
         mouse_position=mouse_position, entities=entities, fov_map=fov_map, camera=camera

@@ -35,9 +35,9 @@ class Constants:
     fov_light_walls: bool = True
     fov_radius: int = 10
 
-    player_hp: int = 30
-    player_defense: int = 2
-    player_power: int = 5
+    player_hp: int = 100
+    player_defense: int = 1
+    player_power: int = 4
 
     level_up_base: int = 200
     level_up_factor: int = 150
