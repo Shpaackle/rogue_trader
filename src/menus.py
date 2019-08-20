@@ -77,13 +77,21 @@ def menu(
 
 
 def inventory_menu(
-    camera: Camera, header: str, inventory: Inventory, inventory_width: int
+    camera: Camera, header: str, player: Entity, inventory_width: int
 ):
     # show a menu with each item of the inventory as an option
-    if len(inventory.items) == 0:
+    if len(player.inventory.items) == 0:
         options = ["Inventory is empty."]
     else:
-        options = [item.name for item in inventory.items]
+        options = []
+
+        for item in player.inventory.items:
+            if player.equipment.main_hand == item:
+                options.append(f"{item.name} on main hand")
+            elif player.equipment.off_hand == item:
+                options.append(f"{item.name} on off hand")
+            else:
+                options.append(item.name)
 
     menu(
         camera_width=camera.width, header=header, options=options, width=inventory_width, camera=camera

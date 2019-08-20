@@ -34,7 +34,9 @@ class Entity:
         item: Optional[components.Item] = None,
         inventory: Optional[components.Inventory] = None,
         stairs: Optional[components.Stairs] = None,
-        level: Optional[components.Level] = None
+        level: Optional[components.Level] = None,
+        equipment: Optional[components.Equipment] = None,
+        equippable: Optional[components.Equippable] = None
     ):
         self.position: Point = position
         self.char: str = char
@@ -48,6 +50,8 @@ class Entity:
         self.inventory: Optional[components.Inventory] = inventory
         self.stairs: Optional[components.Stairs] = stairs
         self.level: Optional[components.Level] = level
+        self.equipment: Optional[components.Equipment] = equipment
+        self.equippable: Optional[components.Equippable] = equippable
 
         if self.fighter:
             self.fighter.owner = self
@@ -66,6 +70,17 @@ class Entity:
 
         if self.level:
             self.level.owner = self
+
+        if self.equipment:
+            self.equipment.owner = self
+
+        if self.equippable:
+            self.equippable.owner = self
+
+            if not self.item:
+                item = components.Item()
+                self.item = item
+                self.item.owner = self
 
     @property
     def x(self) -> int:
@@ -194,6 +209,12 @@ class Entity:
         if self.level:
             json_data["level"] = self.level.to_json()
 
+        if self.equipment:
+            json_data["equipment"] = self.equipment.to_json()
+
+        if self.equippable:
+            json_data["equippable"] = self.equippable.to_json()
+
         return json_data
 
     @classmethod
@@ -212,6 +233,8 @@ class Entity:
         inventory_json: dict = json_data.get("inventory")
         stairs_json: int = json_data.get("stairs")
         level_json: dict = json_data.get("level")
+        equipment_json: dict = json_data.get("equipment")
+        equippable_json: dict = json_data.get("equippable")
 
         if fighter_json:
             fighter = components.Fighter.from_json(json_data=fighter_json)
@@ -234,9 +257,19 @@ class Entity:
             stairs = None
 
         if level_json:
-            level = components.Level(current_level=level_json["current_level"], current_xp=level_json["current_xp"], level_up_base=level_json["level_up_base"], level_up_factor=level_json["level_up_factor"])
+            level = components.Level.from_json(json_data=level_json)
         else:
             level = None
+
+        if equipment_json:
+            equipment = components.Equipment.from_json(json_data=equipment_json)
+        else:
+            equipment = None
+
+        if equippable_json:
+            equippable = components.Equippable.from_json(json_data=equippable_json)
+        else:
+            equippable = None
 
         entity = Entity(
             position=Point(x=x, y=y),
@@ -249,7 +282,9 @@ class Entity:
             item=item,
             inventory=inventory,
             stairs=stairs,
-            level=level
+            level=level,
+            equipment=equipment,
+            equippable=equippable
         )
 
         if ai_json:

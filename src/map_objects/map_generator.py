@@ -7,10 +7,11 @@ from typing import List, Dict
 import numpy as np
 
 from colors import Colors
-from components import BasicMonster, Fighter, Stairs
-from components.item import Item
+from components import BasicMonster, Equippable, Fighter, Item, Stairs
+# from components.item import Item
 from constants import CONSTANTS
 from entity import Entity
+from equipment_slots import EquipmentSlots
 from game_messages import Message, MessageLog
 from item_functions import cast_confuse, cast_fireball, cast_lightning, heal
 from map_objects.point import Point
@@ -207,6 +208,8 @@ class MapGenerator:
 
         item_chances: Dict[str, int] = {
             "healing_potion": 35,
+            "sword": from_dungeon_level(table=[[5, 4]], dungeon_level=self.dungeon_level),
+            "shield": from_dungeon_level(table=[[15, 8]], dungeon_level=self.dungeon_level),
             "lightning_scroll": from_dungeon_level(table=[[25, 4]], dungeon_level=self.dungeon_level),
             "fireball_scroll": from_dungeon_level(table=[[25, 6]], dungeon_level=self.dungeon_level),
             "confusion_scroll": from_dungeon_level(table=[[10, 2]], dungeon_level=self.dungeon_level)
@@ -261,6 +264,24 @@ class MapGenerator:
                         name="Healing Potion",
                         render_order=RenderLayer.ITEM,
                         item=item_component,
+                    )
+                elif item_choice == "sword":
+                    equippable_component = Equippable(slot=EquipmentSlots.MAIN_HAND, power_bonus=3)
+                    item = Entity(
+                        position=point,
+                        char="/",
+                        color=Colors.SKY,
+                        name="Sword",
+                        equippable=equippable_component
+                    )
+                elif item_choice == "shield":
+                    equippable_component = Equippable(slot=EquipmentSlots.OFF_HAND, defense_bonus=1)
+                    item = Entity(
+                        position=point,
+                        char="[",
+                        color=Colors.DARKER_ORANGE,
+                        name="Shield",
+                        equippable=equippable_component
                     )
                 elif item_choice == "fireball_scroll":
                     item_component: Item = Item(

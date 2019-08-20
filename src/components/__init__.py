@@ -1,4 +1,6 @@
 from components.ai import BasicMonster, ConfusedMonster
+from components.equipment import Equipment
+from components.equippable import Equippable
 from components.fighter import Fighter
 from components.inventory import Inventory
 from components.item import Item

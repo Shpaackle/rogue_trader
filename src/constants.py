@@ -37,7 +37,7 @@ class Constants:
 
     player_hp: int = 100
     player_defense: int = 1
-    player_power: int = 4
+    player_power: int = 2
 
     level_up_base: int = 200
     level_up_factor: int = 150

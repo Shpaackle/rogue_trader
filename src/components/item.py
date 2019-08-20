@@ -57,8 +57,13 @@ class Item(EntityComponent):
             )
         else:
             targeting_message = None
+
+        if self.use_function:
+            use_function_name = self.use_function.__name__
+        else:
+            use_function_name = None
         json_data = {
-            "use_function_name": self.use_function.__name__,
+            "use_function_name": use_function_name,
             "targeting": self.targeting,
             "targeting_message": targeting_message,
             "function_kwargs": self.function_kwargs,

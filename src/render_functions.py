@@ -165,7 +165,7 @@ def render_all(
         inventory_menu(
             camera=camera,
             header=inventory_title,
-            inventory=player.inventory,
+            player=player,
             inventory_width=50,
         )
 

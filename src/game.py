@@ -6,9 +6,10 @@ from typing import List, Optional, TYPE_CHECKING
 
 from camera import Camera
 from colors import Colors
-from components import Fighter, Inventory, Level
+from components import Equipment, Equippable, Fighter, Inventory, Level
 from constants import CONSTANTS
 from entity import Entity
+from equipment_slots import EquipmentSlots
 from game_messages import MessageLog, Message
 from game_states import GameStates
 from map_objects import GameMap, MapGenerator, Point
@@ -119,6 +120,7 @@ class Game:
         )
         inventory_component: Inventory = Inventory(capacity=26)
         level_component = Level()
+        equipment_component = Equipment()
         player: Optional[Entity] = Entity(
             position=Point(0, 0),
             char="@",
@@ -128,10 +130,16 @@ class Game:
             render_order=RenderLayer.ACTOR,
             fighter=fighter_component,
             inventory=inventory_component,
-            level=level_component
+            level=level_component,
+            equipment=equipment_component
         )
         game.player: Optional[Entity] = player
         game.entities: Optional[List[Entity]] = [player]
+
+        equippable_component = Equippable(slot=EquipmentSlots.MAIN_HAND, power_bonus=2)
+        dagger = Entity(position=Point(0, 0), char="-", color=Colors.SKY, name="Dagger", equippable=equippable_component)
+        game.player.inventory.add_item(dagger)
+        game.player.equipment.toggle_equip(dagger)
 
         game.message_log: Optional[MessageLog] = MessageLog(
             x=CONSTANTS.message_x,

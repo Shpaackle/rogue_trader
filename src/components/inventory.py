@@ -56,9 +56,14 @@ class Inventory(EntityComponent):
         item_component: Item = item_entity.item
 
         if item_component.use_function is None:
-            results.append(
-                {"message": Message(f"The {item_entity.name}", Colors.YELLOW)}
-            )
+            equippable_component = item_entity.equippable
+
+            if equippable_component:
+                results.append({"equip": item_entity})
+            else:
+                results.append(
+                    {"message": Message(f"The {item_entity.name} cannot be used", Colors.YELLOW)}
+                )
         else:
             if item_component.targeting and not (kwargs.get("target_position")):
                 results.append({"targeting": item_entity})
@@ -79,6 +84,9 @@ class Inventory(EntityComponent):
 
     def drop_item(self, item: Entity) -> List[dict]:
         results = []
+
+        if self.owner.equipment.main_hand == item or self.owner.equipment.off_hand == item:
+            self.owner.equipment.toggle_equip(item)
 
         item.position: Point = self.owner.position
 

@@ -34,3 +34,13 @@ class Level(EntityComponent):
             "level_up_factor": self.level_up_factor
         }
         return json_data
+
+    @classmethod
+    def from_json(cls, json_data: dict):
+        level = cls(
+            current_level=json_data["current_level"],
+            current_xp=json_data["current_xp"],
+            level_up_base=json_data["level_up_base"],
+            level_up_factor=json_data["level_up_factor"]
+        )
+        return level
