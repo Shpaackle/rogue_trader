@@ -15,7 +15,7 @@ class Equipment(EntityComponent):
 
         self.main_hand: Optional[Entity] = main_hand
         self.off_hand: Optional[Entity] = off_hand
-        
+
     @property
     def max_hp_bonus(self) -> int:
         bonus = 0
@@ -108,9 +108,6 @@ class Equipment(EntityComponent):
         else:
             off_hand = None
 
-        equipment = cls(
-            main_hand=main_hand,
-            off_hand=off_hand
-        )
+        equipment = cls(main_hand=main_hand, off_hand=off_hand)
 
         return equipment

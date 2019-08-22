@@ -8,8 +8,6 @@ class Stairs(EntityComponent):
         self.floor: int = floor
 
     def to_json(self) -> dict:
-        json_data = {
-            "floor": self.floor
-        }
+        json_data = {"floor": self.floor}
 
         return json_data
